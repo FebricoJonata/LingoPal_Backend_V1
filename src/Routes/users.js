@@ -64,6 +64,8 @@ usersRouter.get("/", async (req, res) => {
  *                 type: string
  *               password:
  *                 type: string
+ *               phone_number:
+ *                 type: string
  *             required:
  *               - name
  *               - email
@@ -76,20 +78,40 @@ usersRouter.get("/", async (req, res) => {
  *       '500':
  *         description: Internal server error.
  */
+
+// Signup function with phone number handling
 usersRouter.post("/signup", async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, phone_number } = req.body;
 
   try {
+    // Check if the user already exists
+    const { data: existingUsers, error: existingUsersError } = await db
+      .from("users")
+      .select("*")
+      .eq("email", email);
+
+    if (existingUsers && existingUsers.length > 0) {
+      return res.status(400).json({ error: "User already exists." });
+    }
+
     // Sign up the user with authentication
     const { user, error: authError } = await db.auth.signUp({
       email,
       password,
     });
 
+    if (authError) {
+      throw authError;
+    }
+
     // Insert new user into Supabase users table
-    const { data, error: dbError } = await db
+    const { data: newUser, error: dbError } = await db
       .from("users")
-      .insert([{ name, email }]);
+      .insert([{ name, email, phone_number }]);
+
+    if (dbError) {
+      throw dbError;
+    }
 
     return res.status(200).json({ message: "User signed up successfully." });
   } catch (error) {
@@ -148,6 +170,36 @@ usersRouter.post("/signin", async (req, res) => {
       .json({ message: "User signed in successfully.", user, session });
   } catch (error) {
     console.error("Error signing in user:", error.message);
+    return res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+/**
+ * @swagger
+ * /api/users/logout:
+ *   post:
+ *     summary: Logout a user
+ *     description: End the user's session in the Supabase authentication system.
+ *     tags:
+ *       - Users
+ *     responses:
+ *       '200':
+ *         description: User logged out successfully.
+ *       '500':
+ *         description: Internal server error.
+ */
+usersRouter.post("/logout", async (req, res) => {
+  try {
+    // Sign out the user from Supabase
+    const { error } = await db.auth.signOut();
+
+    if (error) {
+      throw error;
+    }
+
+    return res.status(200).json({ message: "User logged out successfully." });
+  } catch (error) {
+    console.error("Error logging out user:", error.message);
     return res.status(500).json({ error: "Internal server error." });
   }
 });
