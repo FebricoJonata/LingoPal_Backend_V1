@@ -1,13 +1,3 @@
-// export default router;
-// router.get("/", (req, res) => {
-//   res.render("pages/index");
-// });
-
-// Getting the index html file here ejs
-// router.get("/", (req, res) => {
-//   res.render("src/pages/index");
-// });
-
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
