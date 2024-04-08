@@ -38,7 +38,7 @@ const options = {
         description: "Local",
       },
       {
-        url: "https://lingo-pal-backend-v1-jlrn.vercel.app",
+        url: "https://lingo-pal-backend-v1.vercel.app",
         description: "Cloud",
       },
     ],

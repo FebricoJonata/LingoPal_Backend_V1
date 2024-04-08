@@ -14,7 +14,6 @@ router.use(cors());
 router.set("view engine", "ejs");
 
 // This was we can keep everything inside our src folder!!
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 router.set("views", path.join(__dirname, "views"));
