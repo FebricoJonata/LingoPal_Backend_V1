@@ -10,6 +10,7 @@ import bodyParser from "body-parser";
 // Import the router
 import usersRouter from "./src/Routes/users.js";
 import helloRouter from "./src/hello.js";
+import speechAzureRouter from "./src/Routes/speechAzure.js";
 
 // CDN CSS
 const CSS_URL =
@@ -57,5 +58,6 @@ app.use(
 
 app.use("/", helloRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/speech", speechAzureRouter);
 
 app.listen(PORT, () => console.log(`Server runs on port ${PORT}`));
