@@ -21,3 +21,8 @@ body {
   font-size: larger;
   color: white;
 }
+
+img {
+  margin-top: 20px;
+  width: 25%;
+}

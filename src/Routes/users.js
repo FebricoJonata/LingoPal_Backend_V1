@@ -1,6 +1,8 @@
 import express from "express";
 import { config as dotenvConfig } from "dotenv";
 import { createClient } from "@supabase/supabase-js";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 dotenvConfig();
 const usersRouter = express.Router();
@@ -11,10 +13,16 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  * @swagger
  * /api/users:
  *   get:
- *     summary: Retrieve a list of users
- *     description: Retrieve a list of users from the Supabase database.
+ *     summary: Retrieve a list of users or search users by email
+ *     description: Retrieve a list of users from the Supabase database or search users by email.
  *     tags:
  *      - Users
+ *     parameters:
+ *       - in: query
+ *         name: email
+ *         schema:
+ *           type: string
+ *         description: Filter users by email address
  *     responses:
  *       '200':
  *         description: A JSON array of users.
@@ -22,26 +30,34 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  *           application/json:
  *             schema:
  *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                     description: The user ID.
- *                   name:
- *                     type: string
- *                     description: The user's name.
- *                   email:
- *                     type: string
- *                     description: The user's email address.
  */
-
 usersRouter.get("/", async (req, res) => {
-  const fetchUsers = await db.from("users").select();
-  return res.status(200).json({
-    status: 200,
-    body: fetchUsers,
-  });
+  try {
+    const { email } = req.query;
+    let fetchUsers;
+
+    if (email) {
+      fetchUsers = await db
+        .from("users")
+        .select("id, name, email, phone_number, birth_date, gender, image")
+        .eq("email", email);
+    } else {
+      fetchUsers = await db
+        .from("users")
+        .select("id, name, email, phone_number, birth_date, gender, image");
+    }
+
+    return res.status(200).json({
+      status: 200,
+      body: fetchUsers,
+    });
+  } catch (error) {
+    console.error("Error retrieving users:", error.message);
+    return res.status(500).json({
+      status: 500,
+      error: "Internal server error",
+    });
+  }
 });
 
 /**
@@ -66,26 +82,37 @@ usersRouter.get("/", async (req, res) => {
  *                 type: string
  *               phone_number:
  *                 type: string
+ *               birth_date:
+ *                 type: string
+ *               gender:
+ *                 type: string
  *             required:
  *               - name
  *               - email
  *               - password
+ *               - birth_date
+ *               - gender
  *     responses:
  *       '200':
  *         description: User signed up successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  *       '400':
  *         description: Invalid request or user already exists.
  *       '500':
  *         description: Internal server error.
  */
-
-// Signup function with phone number handling
 usersRouter.post("/signup", async (req, res) => {
-  const { name, email, password, phone_number } = req.body;
+  const { name, email, password, phone_number, birth_date, gender } = req.body;
 
   try {
     // Check if the user already exists
-    const { data: existingUsers, error: existingUsersError } = await db
+    const { data: existingUsers } = await db
       .from("users")
       .select("*")
       .eq("email", email);
@@ -94,26 +121,27 @@ usersRouter.post("/signup", async (req, res) => {
       return res.status(400).json({ error: "User already exists." });
     }
 
-    // Sign up the user with authentication
-    const { user, error: authError } = await db.auth.signUp({
-      email,
-      password,
-    });
-
-    if (authError) {
-      throw authError;
-    }
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Insert new user into Supabase users table
-    const { data: newUser, error: dbError } = await db
+    const { data: newUser } = await db
       .from("users")
-      .insert([{ name, email, phone_number }]);
+      .insert([
+        {
+          name,
+          email,
+          password: hashedPassword,
+          phone_number,
+          birth_date,
+          gender,
+        },
+      ])
+      .select("id, name, email, phone_number, birth_date, gender, image");
 
-    if (dbError) {
-      throw dbError;
-    }
-
-    return res.status(200).json({ message: "User signed up successfully." });
+    return res
+      .status(200)
+      .json({ message: "User signed up successfully.", data: newUser });
   } catch (error) {
     console.error("Error signing up user:", error.message);
     return res.status(500).json({ error: "Internal server error." });
@@ -153,53 +181,53 @@ usersRouter.post("/signin", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Sign in the user with Supabase authentication
-    const { user, session, error } = await db.auth.signInWithPassword({
-      email,
-      password,
-    });
+    // Fetch user data from Supabase table
+    const { data: users, error } = await db
+      .from("users")
+      .select(
+        "id, name, email, phone_number, birth_date, gender, password, image"
+      )
+      .eq("email", email)
+      .limit(1);
 
-    if (error) {
+    if (error || !users || users.length === 0) {
       return res
         .status(401)
         .json({ error: "Unauthorized, incorrect email or password." });
     }
 
-    return res
-      .status(200)
-      .json({ message: "User signed in successfully.", user, session });
-  } catch (error) {
-    console.error("Error signing in user:", error.message);
-    return res.status(500).json({ error: "Internal server error." });
-  }
-});
+    const user = users[0];
 
-/**
- * @swagger
- * /api/users/logout:
- *   post:
- *     summary: Logout a user
- *     description: End the user's session in the Supabase authentication system.
- *     tags:
- *       - Users
- *     responses:
- *       '200':
- *         description: User logged out successfully.
- *       '500':
- *         description: Internal server error.
- */
-usersRouter.post("/logout", async (req, res) => {
-  try {
-    // Sign out the user from Supabase
-    const { error } = await db.auth.signOut();
+    // Compare the provided password with the hashed password stored in the database
+    const passwordMatch = await bcrypt.compare(password, user.password);
 
-    if (error) {
-      throw error;
+    if (!passwordMatch) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized, incorrect email or password." });
     }
 
-    return res.status(200).json({ message: "User logged out successfully." });
+    // Generate JWT token
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+      expiresIn: "36h",
+    });
+
+    // Return user data and JWT token
+    return res.status(200).json({
+      message: "User signed in successfully.",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone_number: user.phone_number,
+        birth_date: user.birth_date,
+        gender: user.gender,
+        image: user.image,
+      },
+      token,
+    });
   } catch (error) {
-    console.error("Error logging out user:", error.message);
+    console.error("Error signing in user:", error.message);
     return res.status(500).json({ error: "Internal server error." });
   }
 });
