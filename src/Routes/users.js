@@ -139,7 +139,7 @@ usersRouter.post("/signup", async (req, res) => {
           gender,
         },
       ])
-      .select("id, name, email, phone_number, birth_date, gender, image");
+      .select("user_id, name, email, phone_number, birth_date, gender, image");
 
     return res
       .status(200)
@@ -187,7 +187,7 @@ usersRouter.post("/signin", async (req, res) => {
     const { data: users, error } = await db
       .from("m_users")
       .select(
-        "id, name, email, phone_number, birth_date, gender, password, image"
+        "user_id, name, email, phone_number, birth_date, gender, password, image"
       )
       .eq("email", email)
       .limit(1);
@@ -262,7 +262,7 @@ usersRouter.delete("/:id", async (req, res) => {
 
   try {
     // Delete the user from the Supabase database
-    const { error } = await db.from("m_users").delete().eq("id", userId);
+    const { error } = await db.from("m_users").delete().eq("user_id", userId);
 
     if (error) {
       return res.status(500).json({ error: error.message });
