@@ -38,13 +38,15 @@ usersRouter.get("/", async (req, res) => {
 
     if (email) {
       fetchUsers = await db
-        .from("users")
-        .select("id, name, email, phone_number, birth_date, gender, image")
+        .from("m_users")
+        .select("user_id, name, email, phone_number, birth_date, gender, image")
         .eq("email", email);
     } else {
       fetchUsers = await db
-        .from("users")
-        .select("id, name, email, phone_number, birth_date, gender, image");
+        .from("m_users")
+        .select(
+          "user_id, name, email, phone_number, birth_date, gender, image"
+        );
     }
 
     return res.status(200).json({
@@ -113,7 +115,7 @@ usersRouter.post("/signup", async (req, res) => {
   try {
     // Check if the user already exists
     const { data: existingUsers } = await db
-      .from("users")
+      .from("m_users")
       .select("*")
       .eq("email", email);
 
@@ -126,7 +128,7 @@ usersRouter.post("/signup", async (req, res) => {
 
     // Insert new user into Supabase users table
     const { data: newUser } = await db
-      .from("users")
+      .from("m_users")
       .insert([
         {
           name,
@@ -183,7 +185,7 @@ usersRouter.post("/signin", async (req, res) => {
   try {
     // Fetch user data from Supabase table
     const { data: users, error } = await db
-      .from("users")
+      .from("m_users")
       .select(
         "id, name, email, phone_number, birth_date, gender, password, image"
       )
@@ -260,7 +262,7 @@ usersRouter.delete("/:id", async (req, res) => {
 
   try {
     // Delete the user from the Supabase database
-    const { error } = await db.from("users").delete().eq("id", userId);
+    const { error } = await db.from("m_users").delete().eq("id", userId);
 
     if (error) {
       return res.status(500).json({ error: error.message });
