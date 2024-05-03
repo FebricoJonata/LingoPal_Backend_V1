@@ -64,6 +64,100 @@ usersRouter.get("/", async (req, res) => {
 
 /**
  * @swagger
+ * /api/users/status:
+ *   get:
+ *     summary: Get user status
+ *     description: Retrieve user status information.
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: query
+ *         name: user_id
+ *         required: true
+ *         description: The ID of the user to retrieve status information for.
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: Successful operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 body:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       progress_id:
+ *                         type: integer
+ *                         description: The ID of the user's progress
+ *                       total_points:
+ *                         type: integer
+ *                         description: The total points of the user's progress
+ *                       user:
+ *                         type: object
+ *                         properties:
+ *                           name:
+ *                             type: string
+ *                             description: The name of the user
+ *                           email:
+ *                             type: string
+ *                             description: The email of the user
+ *                       level:
+ *                         type: object
+ *                         properties:
+ *                           user_level_name:
+ *                             type: string
+ *                             description: The name of the user's level
+ *                           user_level_code:
+ *                             type: string
+ *                             description: The code of the user's level
+ *       '500':
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 500
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ */
+usersRouter.get("/status", async (req, res) => {
+  try {
+    const { user_id } = req.query;
+    let fetchUsers;
+
+    fetchUsers = await db
+      .from("t_user_progress")
+      .select(
+        "progress_id, total_poin, user_id, user:user_id(name, email), level:user_level_id(user_level_name, user_level_code)"
+      )
+      .eq("user_id", user_id);
+
+    return res.status(200).json({
+      status: 200,
+      body: fetchUsers,
+    });
+  } catch (error) {
+    console.error("Error retrieving users:", error.message);
+    return res.status(500).json({
+      status: 500,
+      error: "Internal server error",
+    });
+  }
+});
+
+/**
+ * @swagger
  * /api/users/signup:
  *   post:
  *     summary: Sign up a new user
