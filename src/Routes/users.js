@@ -401,8 +401,9 @@ usersRouter.post("/update", async (req, res) => {
         birth_date: birth_date,
       })
       .eq("user_id", user_id)
-      .select();
-    console.log(req.body);
+      .select(
+        "user_id, name, email, phone_number, birth_date, gender, password, image"
+      );
     if (error) {
       return res.status(500).json({ error: error.message });
     }
