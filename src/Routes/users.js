@@ -367,8 +367,6 @@ usersRouter.post("/signin", async (req, res) => {
  *                   example: User updated successfully.
  *                 body:
  *                   type: array
- *                   items:
- *                     $ref: '#/definitions/User'
  *       '404':
  *         description: User not found
  *         content:
