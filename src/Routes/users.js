@@ -139,7 +139,7 @@ usersRouter.get("/status", async (req, res) => {
     fetchUsers = await db
       .from("t_user_progress")
       .select(
-        "progress_id, total_poin, user_id, user:user_id(name, email), level:user_level_id(user_level_name, user_level_code)"
+        "progress_id, progress_course_id, total_poin, user_id, user:user_id(name, email), level:user_level_id(user_level_name, user_level_code)"
       )
       .eq("user_id", user_id);
 

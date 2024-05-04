@@ -11,6 +11,7 @@ import bodyParser from "body-parser";
 import usersRouter from "./src/Routes/users.js";
 import helloRouter from "./src/hello.js";
 import speechAzureRouter from "./src/Routes/speechAzure.js";
+import courseRouter from "./src/Routes/course.js";
 // import openAIRouter from "./src/Routes/openAI.js";
 
 // CDN CSS
@@ -60,6 +61,7 @@ app.use(
 app.use("/", helloRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/speech", speechAzureRouter);
+app.use("/api/course", courseRouter);
 // app.use("/api/prompt", openAIRouter);
 
 app.listen(PORT, () => console.log(`Server runs on port ${PORT}`));
