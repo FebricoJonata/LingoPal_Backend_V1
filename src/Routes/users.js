@@ -330,6 +330,101 @@ usersRouter.post("/signin", async (req, res) => {
 
 /**
  * @swagger
+ * /api/users/update:
+ *   post:
+ *     summary: Update user information
+ *     description: Update the name, phone number, gender, and birth date of a user.
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               user_id:
+ *                 type: integer
+ *               name:
+ *                 type: string
+ *               phone_number:
+ *                 type: string
+ *               gender:
+ *                 type: string
+ *               birth_date:
+ *                 type: string
+ *                 format: date
+ *     responses:
+ *       '200':
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User updated successfully.
+ *                 body:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/definitions/User'
+ *       '404':
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: User not found.
+ *       '500':
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error.
+ */
+usersRouter.post("/update", async (req, res) => {
+  const { user_id, name, phone_number, gender, birth_date } = req.body;
+
+  try {
+    const { data: users, error } = await db
+      .from("m_users")
+      .update({
+        name: name,
+        phone_number: phone_number,
+        gender: gender,
+        birth_date: birth_date,
+      })
+      .eq("user_id", user_id)
+      .select();
+    console.log(req.body);
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    if (!users) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    return res.status(200).json({
+      message: "User updated successfully.",
+      body: users,
+    });
+  } catch (error) {
+    console.error("Error updating user:", error.message);
+    return res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+/**
+ * @swagger
  * /api/users/{id}:
  *   delete:
  *     summary: Delete a user
