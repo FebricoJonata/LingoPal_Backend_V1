@@ -159,6 +159,10 @@ courseRouter.post("/progress", async (req, res) => {
       course_id,
     } = req.body;
 
+    const currentTimestamp = new Date().toLocaleString("id-ID", {
+      timeZone: "UTC",
+    });
+
     let { data: progress } = await db
       .from("t_user_course_progress")
       .update({
@@ -166,6 +170,7 @@ courseRouter.post("/progress", async (req, res) => {
         is_active: is_active,
         is_course_completed: is_course_completed,
         course_id: course_id,
+        updated_at: currentTimestamp,
       })
       .select(
         "progress_course_id, user_id, course_id, progress_poin, is_active, is_course_completed"

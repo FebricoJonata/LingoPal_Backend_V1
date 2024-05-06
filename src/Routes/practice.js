@@ -67,8 +67,112 @@ practiceRouter.get("/progress", async (req, res) => {
 
     let { data: progress } = await db
       .from("t_user_practice_progress")
-      .select("*")
+      .select(
+        "progress_practice_id, user_id, practice_id, progress_poin, is_active, is_passed"
+      )
       .eq("user_id", user_id);
+
+    return res.status(200).json({
+      status: 200,
+      body: progress,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      error: "Internal server error",
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/practice/progress:
+ *   post:
+ *     summary: Update user's practice progress.
+ *     description: Update user's practice progress.
+ *     tags:
+ *       - Practice
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               progress_practice_id:
+ *                 type: integer
+ *               user_id:
+ *                 type: integer
+ *               practice_id:
+ *                 type: integer
+ *               progress_poin:
+ *                 type: number
+ *               is_active:
+ *                 type: boolean
+ *               is_passed:
+ *                 type: boolean
+ *     responses:
+ *       '200':
+ *         description: Course progress updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Course progress updated successfully.
+ *                 body:
+ *                   type: array
+ *       '404':
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: User not found.
+ *       '500':
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error.
+ */
+practiceRouter.post("/progress", async (req, res) => {
+  try {
+    const {
+      progress_practice_id,
+      user_id,
+      progress_poin,
+      is_active,
+      is_passed,
+      practice_id,
+    } = req.body;
+
+    const currentTimestamp = new Date().toLocaleString("id-ID", {
+      timeZone: "UTC",
+    });
+    let { data: progress } = await db
+      .from("t_user_practice_progress")
+      .update({
+        progress_poin: progress_poin,
+        is_active: is_active,
+        is_passed: is_passed,
+        practice_id: practice_id,
+        updated_at: currentTimestamp,
+      })
+      .select(
+        "progress_practice_id, user_id, practice_id, progress_poin, is_active, is_passed"
+      )
+      .eq("user_id", user_id)
+      .eq("progress_practice_id", progress_practice_id);
 
     return res.status(200).json({
       status: 200,
