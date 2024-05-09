@@ -354,6 +354,8 @@ usersRouter.post("/signin", async (req, res) => {
  *               birth_date:
  *                 type: string
  *                 format: date
+ *               image:
+ *                 type: string
  *     responses:
  *       '200':
  *         description: User updated successfully
@@ -389,7 +391,7 @@ usersRouter.post("/signin", async (req, res) => {
  *                   example: Internal server error.
  */
 usersRouter.post("/update", async (req, res) => {
-  const { user_id, name, phone_number, gender, birth_date } = req.body;
+  const { user_id, name, phone_number, gender, birth_date, image } = req.body;
 
   try {
     const { data: users, error } = await db
@@ -399,6 +401,7 @@ usersRouter.post("/update", async (req, res) => {
         phone_number: phone_number,
         gender: gender,
         birth_date: birth_date,
+        image: image,
       })
       .eq("user_id", user_id)
       .select(
