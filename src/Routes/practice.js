@@ -25,7 +25,9 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  */
 practiceRouter.get("/", async (req, res) => {
   try {
-    let { data: practices } = await db.from("m_practice").select("*");
+    let { data: practices } = await db
+      .from("m_practice")
+      .select("*, course:course_id(course_name, course_description)");
 
     return res.status(200).json({
       status: 200,
