@@ -15,6 +15,12 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  *     description: Retrieve a list of practices from the database.
  *     tags:
  *      - Practice
+ *     parameters:
+ *       - in: query
+ *         name: course_id
+ *         schema:
+ *           type: string
+ *         description: Filter users by course id
  *     responses:
  *       '200':
  *         description: A JSON array of practices.
@@ -25,7 +31,12 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  */
 practiceRouter.get("/", async (req, res) => {
   try {
-    let { data: practices } = await db.from("m_practice").select("*");
+    const { course_id } = req.query;
+
+    let { data: practices } = await db
+      .from("m_practice")
+      .select("*, course:course_id(course_name, course_description)")
+      .eq("course_id", course_id);
 
     return res.status(200).json({
       status: 200,

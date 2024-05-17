@@ -312,7 +312,7 @@ usersRouter.post("/signin", async (req, res) => {
     return res.status(200).json({
       message: "User signed in successfully.",
       user: {
-        id: user.id,
+        user_id: user.user_id,
         name: user.name,
         email: user.email,
         phone_number: user.phone_number,
