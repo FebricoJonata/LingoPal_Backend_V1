@@ -15,6 +15,7 @@ import courseRouter from "./src/Routes/course.js";
 import practiceRouter from "./src/Routes/practice.js";
 import quizRouter from "./src/Routes/quiz.js";
 import wordsRouter from "./src/Routes/word.js";
+import groqRouter from "./src/Routes/groq.js";
 
 // CDN CSS
 const CSS_URL =
@@ -67,5 +68,6 @@ app.use("/api/course", courseRouter);
 app.use("/api/practice", practiceRouter);
 app.use("/api/quiz", quizRouter);
 app.use("/api/word", wordsRouter);
+app.use("/api/chat", groqRouter);
 
 app.listen(PORT, () => console.log(`Server runs on port ${PORT}`));
