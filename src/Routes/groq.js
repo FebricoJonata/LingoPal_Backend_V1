@@ -8,6 +8,8 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
+let conversationHistory = [];
+
 groqRouter.post("/chat-completion", async (req, res) => {
   try {
     const { conversation } = req.body;
@@ -17,7 +19,10 @@ groqRouter.post("/chat-completion", async (req, res) => {
       ? conversation
       : [conversation];
 
-    const chatCompletion = await getGroqChatCompletion(messages);
+    // Add current conversation to history
+    conversationHistory = [...conversationHistory, ...messages];
+
+    const chatCompletion = await getGroqChatCompletion(conversationHistory);
 
     res.json({ message: chatCompletion.choices[0]?.message?.content || "" });
   } catch (error) {
@@ -32,22 +37,22 @@ async function getGroqChatCompletion(conversation) {
       {
         role: "system",
         content:
-          "You're english assistant that help users to learn english using conversation. So, your first response to user is to start conversation directly about daily activity. Your name is Daniella. ",
+          "You're english assistant that help users to learn english using conversation. So, your first response to user is to start conversation directly about daily activity. Your name is Lingo. ",
       },
       {
         role: "system",
         content:
-          "Daniella, as english assistant you need to give your user warm welcoming as possible if they start to interact with you",
+          "Lingo, as english assistant you need to give your user warm welcoming as possible if they start to interact with you",
       },
       {
         role: "system",
         content:
-          "Daniella, as english assistant you dont need to response any unrelated conversation beside help users to improve their english and you can really reject to answer them if they ask unrelated question like solving/giving them snippet code.",
+          "Lingo, as english assistant you dont need to response any unrelated conversation beside help users to improve their english and you can really reject to answer them if they ask unrelated question like solving/giving them snippet code.",
       },
       {
         role: "system",
         content:
-          "Daniella, as english assistant you can to rate users english skill by conversation your had from scale 1-100. Give disclamer that your judgement is not really describe user's real skill. Finally say thank you! you can say it if user say 'Stop Conversation' ",
+          "Lingo, as english assistant you can to rate users english skill by conversation your had from scale 1-100. Give disclamer that your judgement is not really describe user's real skill. Finally say thank you! you can say it if user say 'Stop Conversation' ",
       },
       ...conversation,
     ],
