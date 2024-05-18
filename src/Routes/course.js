@@ -28,7 +28,7 @@ courseRouter.get("/", async (req, res) => {
     let { data: courses } = await db
       .from("m_course")
       .select(
-        "course_id, course_name, course_description, min_poin, user_level_id, course_category_id"
+        "course_id, course_name, course_description, min_poin, user_level_id, category:course_category_id(course_category_name)"
       );
 
     return res.status(200).json({
