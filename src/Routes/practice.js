@@ -79,7 +79,7 @@ practiceRouter.get("/progress", async (req, res) => {
     let { data: progress } = await db
       .from("t_user_practice_progress")
       .select(
-        "progress_practice_id, user_id, practice_id, progress_poin, is_active, is_passed"
+        "progress_practice_id, user_id, practice_id, progress_poin, is_active, is_passed, practice:practice_id(practice_code)"
       )
       .eq("user_id", user_id);
 
