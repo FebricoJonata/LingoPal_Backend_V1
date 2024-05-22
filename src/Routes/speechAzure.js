@@ -4,6 +4,7 @@ import axios from "axios";
 import fs from "fs";
 import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 import _ from "lodash";
+import ffmpeg from "fluent-ffmpeg";
 dotenvConfig();
 
 const speechAzureRouter = express.Router();
@@ -80,7 +81,7 @@ speechAzureRouter.post("/speech-to-text", async (req, res) => {
     const subscriptionKey = process.env.SPEECH_KEY; // Your Azure Cognitive Services subscription key
     const region = "eastasia";
 
-    pronunciationAssessmentContinuousWithFile(req.body);
+    // Perform speech recognition
     const response = await axios.post(
       `https://${region}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=en-US&format=detailed`,
       audioData,
@@ -92,88 +93,77 @@ speechAzureRouter.post("/speech-to-text", async (req, res) => {
       }
     );
 
-    res.json(response.data);
+    // Perform pronunciation assessment
+    const pronunciationScores = await pronunciationAssessmentContinuousWithFile(
+      audioData
+    );
+
+    // Combine speech recognition result with pronunciation scores
+    const result = {
+      recognition: response.data,
+      pronunciationScores,
+    };
+
+    res.json(result);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-//pronunciationAssessmentContinuousWithFile using microsoft Machine Learning SDK
-const pronunciationAssessmentContinuousWithFile = (wavData) => {
-  const audioConfig = sdk.AudioConfig.fromWavFileInput(wavData);
-  const speechConfig = sdk.SpeechConfig.fromSubscription(
-    process.env.SPEECH_KEY,
-    "eastasia"
-  );
-
-  const reference_text = "this a test response API";
-  const pronunciationAssessmentConfig = new sdk.PronunciationAssessmentConfig(
-    reference_text,
-    sdk.PronunciationAssessmentGradingSystem.HundredMark,
-    sdk.PronunciationAssessmentGranularity.Phoneme,
-    true
-  );
-  pronunciationAssessmentConfig.enableProsodyAssessment = true;
-
-  const language = "en-US";
-  speechConfig.speechRecognitionLanguage = language;
-
-  const reco = new sdk.SpeechRecognizer(speechConfig, audioConfig);
-  pronunciationAssessmentConfig.applyTo(reco);
-
-  reco.recognizing = function (s, e) {
-    console.log(
-      "(recognizing) Reason: " +
-        sdk.ResultReason[e.result.reason] +
-        " Text: " +
-        e.result.text
-    );
-  };
-
-  reco.recognized = function (s, e) {
-    console.log("pronunciation assessment for: ", e.result.text);
-    const pronunciation_result = sdk.PronunciationAssessmentResult.fromResult(
-      e.result
-    );
-    console.log(
-      " Accuracy score: ",
-      pronunciation_result.accuracyScore,
-      "\n",
-      "pronunciation score: ",
-      pronunciation_result.pronunciationScore,
-      "\n",
-      "completeness score : ",
-      pronunciation_result.completenessScore,
-      "\n",
-      "fluency score: ",
-      pronunciation_result.fluencyScore
+// Pronunciation Assessment using Microsoft Machine Learning SDK
+const pronunciationAssessmentContinuousWithFile = async (wavData) => {
+  return new Promise((resolve, reject) => {
+    const audioConfig = sdk.AudioConfig.fromWavFileInput(wavData);
+    const speechConfig = sdk.SpeechConfig.fromSubscription(
+      process.env.SPEECH_KEY,
+      "eastasia"
     );
 
-    // Your logic for scoring system here
-  };
+    const referenceText = "this a test response API";
+    const pronunciationAssessmentConfig = new sdk.PronunciationAssessmentConfig(
+      referenceText,
+      sdk.PronunciationAssessmentGradingSystem.HundredMark,
+      sdk.PronunciationAssessmentGranularity.Phoneme,
+      true
+    );
+    pronunciationAssessmentConfig.enableProsodyAssessment = true;
 
-  reco.canceled = function (s, e) {
-    if (e.reason === sdk.CancellationReason.Error) {
-      console.log(
-        "(cancel) Reason: " +
-          sdk.CancellationReason[e.reason] +
-          ": " +
-          e.errorDetails
-      );
-    }
-    reco.stopContinuousRecognitionAsync();
-  };
+    speechConfig.speechRecognitionLanguage = "en-US";
 
-  reco.sessionStarted = function (s, e) {};
+    const recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
+    pronunciationAssessmentConfig.applyTo(recognizer);
 
-  reco.sessionStopped = function (s, e) {
-    reco.stopContinuousRecognitionAsync();
-    reco.close();
-    // Calculate and handle scores here
-  };
+    recognizer.recognized = (s, e) => {
+      if (e.result.reason === sdk.ResultReason.RecognizedSpeech) {
+        const pronunciationResult =
+          sdk.PronunciationAssessmentResult.fromResult(e.result);
+        const scores = {
+          accuracyScore: pronunciationResult.accuracyScore,
+          pronunciationScore: pronunciationResult.pronunciationScore,
+          completenessScore: pronunciationResult.completenessScore,
+          fluencyScore: pronunciationResult.fluencyScore,
+        };
+        resolve(scores);
+      } else {
+        reject(new Error("Speech not recognized"));
+      }
+    };
 
-  reco.startContinuousRecognitionAsync();
+    recognizer.canceled = (s, e) => {
+      if (e.reason === sdk.CancellationReason.Error) {
+        reject(new Error(`CancellationReason: ${e.errorDetails}`));
+      }
+      recognizer.stopContinuousRecognitionAsync();
+    };
+
+    recognizer.sessionStopped = (s, e) => {
+      recognizer.stopContinuousRecognitionAsync();
+      recognizer.close();
+    };
+
+    recognizer.startContinuousRecognitionAsync();
+  });
 };
 
 export default speechAzureRouter;
