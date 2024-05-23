@@ -93,9 +93,11 @@ speechAzureRouter.post("/speech-to-text", async (req, res) => {
       }
     );
 
+    const buffer = Buffer.from(audioData);
+
     // Perform pronunciation assessment
     const pronunciationScores = await pronunciationAssessmentContinuousWithFile(
-      audioData
+      buffer
     );
 
     // Combine speech recognition result with pronunciation scores
