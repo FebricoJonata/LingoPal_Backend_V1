@@ -73,7 +73,7 @@ speechAzureRouter.post("/text-to-speech", async (req, res) => {
 });
 
 // Middleware to parse binary request body
-speechAzureRouter.use(express.raw({ limit: "50mb", type: "audio/wave" }));
+speechAzureRouter.use(express.raw({ limit: "100mb", type: "audio/wave" }));
 
 speechAzureRouter.post("/speech-to-text", async (req, res) => {
   try {
@@ -93,7 +93,11 @@ speechAzureRouter.post("/speech-to-text", async (req, res) => {
       }
     );
 
-    const buffer = Buffer.from(audioData);
+    const buffer = Buffer.isBuffer(audioData)
+      ? audioData
+      : Buffer.from(audioData);
+
+    console.log(buffer);
 
     // Perform pronunciation assessment
     const pronunciationScores = await pronunciationAssessmentContinuousWithFile(
