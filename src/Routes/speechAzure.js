@@ -30,12 +30,16 @@ const speechAzureRouter = express.Router();
  *               - text
  *     responses:
  *       '200':
- *         description: Audio file generated from the text.
+ *         description: Audio file generated from the text in Base64 format.
  *         content:
- *           audio/mpeg:
+ *           application/json:
  *             schema:
- *               type: string
- *               format: binary
+ *               type: object
+ *               properties:
+ *                 audioContent:
+ *                   type: string
+ *                   format: base64
+ *                   description: Base64 encoded audio content.
  */
 speechAzureRouter.post("/text-to-speech", async (req, res) => {
   try {
@@ -56,16 +60,13 @@ speechAzureRouter.post("/text-to-speech", async (req, res) => {
         "X-Microsoft-OutputFormat": "audio-16khz-128kbitrate-mono-mp3",
         "User-Agent": "curl",
       },
-      responseType: "stream",
+      responseType: "arraybuffer",
     });
 
-    res.set({
-      "Content-Type": "audio/mpeg",
-      "Content-Disposition": "attachment",
-    });
+    const audioBuffer = Buffer.from(response.data, "binary");
+    const audioBase64 = audioBuffer.toString("base64");
 
-    // Forward the response directly to the client
-    response.data.pipe(res);
+    res.json({ audioContent: audioBase64 });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
