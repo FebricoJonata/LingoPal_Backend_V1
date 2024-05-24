@@ -127,7 +127,7 @@ const pronunciationAssessmentContinuousWithFile = async (wavData) => {
       "eastasia"
     );
 
-    const referenceText = "this a test response API";
+    const referenceText = "It's a sunny day";
     const pronunciationAssessmentConfig = new sdk.PronunciationAssessmentConfig(
       referenceText,
       sdk.PronunciationAssessmentGradingSystem.HundredMark,
