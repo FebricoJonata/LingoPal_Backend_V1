@@ -4,6 +4,7 @@ import axios from "axios";
 import fs from "fs";
 import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 import _ from "lodash";
+import ffmpeg from "fluent-ffmpeg";
 dotenvConfig();
 
 const speechAzureRouter = express.Router();
@@ -29,12 +30,16 @@ const speechAzureRouter = express.Router();
  *               - text
  *     responses:
  *       '200':
- *         description: Audio file generated from the text.
+ *         description: Audio file generated from the text in Base64 format.
  *         content:
- *           audio/mpeg:
+ *           application/json:
  *             schema:
- *               type: string
- *               format: binary
+ *               type: object
+ *               properties:
+ *                 audioContent:
+ *                   type: string
+ *                   format: base64
+ *                   description: Base64 encoded audio content.
  */
 speechAzureRouter.post("/text-to-speech", async (req, res) => {
   try {
@@ -55,16 +60,13 @@ speechAzureRouter.post("/text-to-speech", async (req, res) => {
         "X-Microsoft-OutputFormat": "audio-16khz-128kbitrate-mono-mp3",
         "User-Agent": "curl",
       },
-      responseType: "stream",
+      responseType: "arraybuffer",
     });
 
-    res.set({
-      "Content-Type": "audio/mpeg",
-      "Content-Disposition": "attachment",
-    });
+    const audioBuffer = Buffer.from(response.data, "binary");
+    const audioBase64 = audioBuffer.toString("base64");
 
-    // Forward the response directly to the client
-    response.data.pipe(res);
+    res.json({ audioContent: audioBase64 });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -72,7 +74,7 @@ speechAzureRouter.post("/text-to-speech", async (req, res) => {
 });
 
 // Middleware to parse binary request body
-speechAzureRouter.use(express.raw({ limit: "50mb", type: "audio/wave" }));
+speechAzureRouter.use(express.raw({ limit: "100mb", type: "audio/wave" }));
 
 speechAzureRouter.post("/speech-to-text", async (req, res) => {
   try {
@@ -80,7 +82,7 @@ speechAzureRouter.post("/speech-to-text", async (req, res) => {
     const subscriptionKey = process.env.SPEECH_KEY; // Your Azure Cognitive Services subscription key
     const region = "eastasia";
 
-    pronunciationAssessmentContinuousWithFile(req.body);
+    // Perform speech recognition
     const response = await axios.post(
       `https://${region}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=en-US&format=detailed`,
       audioData,
@@ -92,88 +94,83 @@ speechAzureRouter.post("/speech-to-text", async (req, res) => {
       }
     );
 
-    res.json(response.data);
+    const buffer = Buffer.isBuffer(audioData)
+      ? audioData
+      : Buffer.from(audioData);
+
+    console.log(buffer);
+
+    // Perform pronunciation assessment
+    const pronunciationScores = await pronunciationAssessmentContinuousWithFile(
+      buffer
+    );
+
+    // Combine speech recognition result with pronunciation scores
+    const result = {
+      recognition: response.data,
+      pronunciationScores,
+    };
+
+    res.json(result);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-//pronunciationAssessmentContinuousWithFile using microsoft Machine Learning SDK
-const pronunciationAssessmentContinuousWithFile = (wavData) => {
-  const audioConfig = sdk.AudioConfig.fromWavFileInput(wavData);
-  const speechConfig = sdk.SpeechConfig.fromSubscription(
-    process.env.SPEECH_KEY,
-    "eastasia"
-  );
-
-  const reference_text = "this a test response API";
-  const pronunciationAssessmentConfig = new sdk.PronunciationAssessmentConfig(
-    reference_text,
-    sdk.PronunciationAssessmentGradingSystem.HundredMark,
-    sdk.PronunciationAssessmentGranularity.Phoneme,
-    true
-  );
-  pronunciationAssessmentConfig.enableProsodyAssessment = true;
-
-  const language = "en-US";
-  speechConfig.speechRecognitionLanguage = language;
-
-  const reco = new sdk.SpeechRecognizer(speechConfig, audioConfig);
-  pronunciationAssessmentConfig.applyTo(reco);
-
-  reco.recognizing = function (s, e) {
-    console.log(
-      "(recognizing) Reason: " +
-        sdk.ResultReason[e.result.reason] +
-        " Text: " +
-        e.result.text
-    );
-  };
-
-  reco.recognized = function (s, e) {
-    console.log("pronunciation assessment for: ", e.result.text);
-    const pronunciation_result = sdk.PronunciationAssessmentResult.fromResult(
-      e.result
-    );
-    console.log(
-      " Accuracy score: ",
-      pronunciation_result.accuracyScore,
-      "\n",
-      "pronunciation score: ",
-      pronunciation_result.pronunciationScore,
-      "\n",
-      "completeness score : ",
-      pronunciation_result.completenessScore,
-      "\n",
-      "fluency score: ",
-      pronunciation_result.fluencyScore
+// Pronunciation Assessment using Microsoft Machine Learning SDK
+const pronunciationAssessmentContinuousWithFile = async (wavData) => {
+  return new Promise((resolve, reject) => {
+    const audioConfig = sdk.AudioConfig.fromWavFileInput(wavData);
+    const speechConfig = sdk.SpeechConfig.fromSubscription(
+      process.env.SPEECH_KEY,
+      "eastasia"
     );
 
-    // Your logic for scoring system here
-  };
+    const referenceText = "It's a sunny day";
+    const pronunciationAssessmentConfig = new sdk.PronunciationAssessmentConfig(
+      referenceText,
+      sdk.PronunciationAssessmentGradingSystem.HundredMark,
+      sdk.PronunciationAssessmentGranularity.Phoneme,
+      true
+    );
+    pronunciationAssessmentConfig.enableProsodyAssessment = true;
 
-  reco.canceled = function (s, e) {
-    if (e.reason === sdk.CancellationReason.Error) {
-      console.log(
-        "(cancel) Reason: " +
-          sdk.CancellationReason[e.reason] +
-          ": " +
-          e.errorDetails
-      );
-    }
-    reco.stopContinuousRecognitionAsync();
-  };
+    speechConfig.speechRecognitionLanguage = "en-US";
 
-  reco.sessionStarted = function (s, e) {};
+    const recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
+    pronunciationAssessmentConfig.applyTo(recognizer);
 
-  reco.sessionStopped = function (s, e) {
-    reco.stopContinuousRecognitionAsync();
-    reco.close();
-    // Calculate and handle scores here
-  };
+    recognizer.recognized = (s, e) => {
+      if (e.result.reason === sdk.ResultReason.RecognizedSpeech) {
+        const pronunciationResult =
+          sdk.PronunciationAssessmentResult.fromResult(e.result);
+        const scores = {
+          accuracyScore: pronunciationResult.accuracyScore,
+          pronunciationScore: pronunciationResult.pronunciationScore,
+          completenessScore: pronunciationResult.completenessScore,
+          fluencyScore: pronunciationResult.fluencyScore,
+        };
+        resolve(scores);
+      } else {
+        reject(new Error("Speech not recognized"));
+      }
+    };
 
-  reco.startContinuousRecognitionAsync();
+    recognizer.canceled = (s, e) => {
+      if (e.reason === sdk.CancellationReason.Error) {
+        reject(new Error(`CancellationReason: ${e.errorDetails}`));
+      }
+      recognizer.stopContinuousRecognitionAsync();
+    };
+
+    recognizer.sessionStopped = (s, e) => {
+      recognizer.stopContinuousRecognitionAsync();
+      recognizer.close();
+    };
+
+    recognizer.startContinuousRecognitionAsync();
+  });
 };
 
 export default speechAzureRouter;
