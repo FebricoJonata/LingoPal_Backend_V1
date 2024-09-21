@@ -15,6 +15,12 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  *     description: Retrieve a list of quiz from the database.
  *     tags:
  *      - Quiz
+ *     parameters:
+ *       - in: query
+ *         name: practice_id
+ *         schema:
+ *           type: string
+ *         description: Filter users by user id
  *     responses:
  *       '200':
  *         description: A JSON array of quiz.
