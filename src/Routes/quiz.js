@@ -25,7 +25,12 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  */
 quizRouter.get("/", async (req, res) => {
   try {
-    let { data: quiz } = await db.from("m_quiz").select("*");
+    const { practice_id } = req.query;
+
+    let { data: quiz } = await db
+      .from("m_quiz")
+      .select("*")
+      .eq("practice_id", practice_id);
 
     return res.status(200).json({
       status: 200,

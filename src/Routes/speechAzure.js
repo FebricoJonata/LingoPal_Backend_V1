@@ -4,7 +4,6 @@ import axios from "axios";
 import fs from "fs";
 import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 import _ from "lodash";
-import ffmpeg from "fluent-ffmpeg";
 dotenvConfig();
 
 const speechAzureRouter = express.Router();
