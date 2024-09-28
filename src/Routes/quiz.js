@@ -5,7 +5,6 @@ import { createClient } from "@supabase/supabase-js";
 dotenvConfig();
 const quizRouter = express.Router();
 
-// Initialize Supabase client
 const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 /**
