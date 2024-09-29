@@ -33,7 +33,6 @@ quizRouter.get("/", async (req, res) => {
   try {
     const { practice_id } = req.query;
 
-    // Validate that practice_id is provided
     if (!practice_id) {
       return res.status(400).json({
         status: 400,
