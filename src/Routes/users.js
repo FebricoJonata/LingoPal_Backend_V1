@@ -330,6 +330,102 @@ usersRouter.post("/signin", async (req, res) => {
 
 /**
  * @swagger
+ * /api/users/admin-signin:
+ *   post:
+ *     summary: Sign in an admin
+ *     description: Authenticate an admin in the Supabase authentication system.
+ *     tags:
+ *       - Admins
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required:
+ *               - email
+ *               - password
+ *     responses:
+ *       '200':
+ *         description: Admin signed in successfully.
+ *       '401':
+ *         description: Unauthorized, incorrect email or password, or not an admin.
+ *       '500':
+ *         description: Internal server error.
+ */
+usersRouter.post("/admin-signin", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Fetch user data from Supabase table
+    const { data: users, error } = await db
+      .from("m_users")
+      .select(
+        "user_id, name, email, phone_number, birth_date, gender, password, image, fgAdmin"
+      )
+      .eq("email", email)
+      .limit(1);
+
+    if (error || !users || users.length === 0) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized, incorrect email or password." });
+    }
+
+    const user = users[0];
+
+    // Check if the user is an admin (fgAdmin must be true)
+    if (!user.fgAdmin) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized, user is not an admin." });
+    }
+
+    // Compare the provided password with the hashed password stored in the database
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized, incorrect email or password." });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user.user_id, isAdmin: true },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "36h",
+      }
+    );
+
+    // Return admin data and JWT token
+    return res.status(200).json({
+      message: "Admin signed in successfully.",
+      admin: {
+        user_id: user.user_id,
+        name: user.name,
+        email: user.email,
+        phone_number: user.phone_number,
+        birth_date: user.birth_date,
+        gender: user.gender,
+        image: user.image,
+        fgAdmin: user.fgAdmin,
+      },
+      token,
+    });
+  } catch (error) {
+    console.error("Error signing in admin:", error.message);
+    return res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+/**
+ * @swagger
  * /api/users/update:
  *   post:
  *     summary: Update user information
