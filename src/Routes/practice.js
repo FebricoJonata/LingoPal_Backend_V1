@@ -76,7 +76,7 @@ practiceRouter.get("/progress", async (req, res) => {
   try {
     const { user_id } = req.query;
 
-    let { data: progress } = await db
+    const { data: progress } = await db
       .from("t_user_practice_progress")
       .select(
         "progress_practice_id, user_id, practice_id, progress_poin, is_active, is_passed, practice:practice_id(practice_code)"
@@ -170,20 +170,58 @@ practiceRouter.post("/progress", async (req, res) => {
     const currentTimestamp = new Date().toLocaleString("id-ID", {
       timeZone: "UTC",
     });
-    let { data: progress } = await db
-      .from("t_user_practice_progress")
-      .update({
-        progress_poin: progress_poin,
-        is_active: is_active,
-        is_passed: is_passed,
-        practice_id: practice_id,
-        updated_at: currentTimestamp,
-      })
-      .select(
-        "progress_practice_id, user_id, practice_id, progress_poin, is_active, is_passed"
-      )
-      .eq("user_id", user_id)
-      .eq("progress_practice_id", progress_practice_id);
+
+    let progress;
+    if (progress_practice_id !== 0) {
+      // If record exists, update it
+      const { data: updatedProgress, error: updateError } = await db
+        .from("t_user_practice_progress")
+        .update({
+          progress_poin,
+          is_active,
+          is_passed,
+          practice_id,
+          updated_at: currentTimestamp,
+        })
+        .eq("progress_practice_id", progress_practice_id)
+        .eq("user_id", user_id)
+        .select(
+          "progress_practice_id, user_id, practice_id, progress_poin, is_active, is_passed"
+        );
+
+      if (updateError) {
+        return res.status(500).json({
+          status: 500,
+          error: "Failed to update the record",
+        });
+      }
+
+      progress = updatedProgress;
+    } else {
+      // If record doesn't exist, insert a new one
+      const { data: insertedProgress, error: insertError } = await db
+        .from("t_user_practice_progress")
+        .insert({
+          user_id,
+          practice_id,
+          progress_poin,
+          is_active,
+          is_passed,
+          updated_at: currentTimestamp,
+        })
+        .select(
+          "progress_practice_id, user_id, practice_id, progress_poin, is_active, is_passed"
+        );
+
+      if (insertError) {
+        return res.status(500).json({
+          status: 500,
+          error: "Failed to insert new record",
+        });
+      }
+
+      progress = insertedProgress;
+    }
 
     return res.status(200).json({
       status: 200,
