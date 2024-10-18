@@ -163,20 +163,58 @@ courseRouter.post("/progress", async (req, res) => {
       timeZone: "UTC",
     });
 
-    let { data: progress } = await db
-      .from("t_user_course_progress")
-      .update({
-        progress_poin: progress_poin,
-        is_active: is_active,
-        is_course_completed: is_course_completed,
-        course_id: course_id,
-        updated_at: currentTimestamp,
-      })
-      .select(
-        "progress_course_id, user_id, course_id, progress_poin, is_active, is_course_completed"
-      )
-      .eq("user_id", user_id)
-      .eq("progress_course_id", progress_course_id);
+    let progress;
+
+    if (progress_course_id === 0) {
+      // Insert a new record if progress_course_id is 0
+      const { data: insertedProgress, error: insertError } = await db
+        .from("t_user_course_progress")
+        .insert({
+          user_id: user_id,
+          course_id: course_id,
+          progress_poin: progress_poin,
+          is_active: is_active,
+          is_course_completed: is_course_completed,
+          updated_at: currentTimestamp,
+        })
+        .select(
+          "progress_course_id, user_id, course_id, progress_poin, is_active, is_course_completed"
+        );
+
+      if (insertError) {
+        return res.status(500).json({
+          status: 500,
+          error: "Failed to insert new record",
+        });
+      }
+
+      progress = insertedProgress;
+    } else {
+      // Update the existing record if progress_course_id is not 0
+      const { data: updatedProgress, error: updateError } = await db
+        .from("t_user_course_progress")
+        .update({
+          progress_poin: progress_poin,
+          is_active: is_active,
+          is_course_completed: is_course_completed,
+          course_id: course_id,
+          updated_at: currentTimestamp,
+        })
+        .eq("user_id", user_id)
+        .eq("progress_course_id", progress_course_id)
+        .select(
+          "progress_course_id, user_id, course_id, progress_poin, is_active, is_course_completed"
+        );
+
+      if (updateError) {
+        return res.status(500).json({
+          status: 500,
+          error: "Failed to update record",
+        });
+      }
+
+      progress = updatedProgress;
+    }
 
     return res.status(200).json({
       status: 200,
