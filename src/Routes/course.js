@@ -73,7 +73,8 @@ courseRouter.get("/progress", async (req, res) => {
       .select(
         "progress_course_id, user_id, course_id, progress_poin, is_active, is_course_completed"
       )
-      .eq("user_id", user_id);
+      .eq("user_id", user_id)
+      .order("progress_course_id", { ascending: true });
 
     return res.status(200).json({
       status: 200,
