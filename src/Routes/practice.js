@@ -81,7 +81,8 @@ practiceRouter.get("/progress", async (req, res) => {
       .select(
         "progress_practice_id, user_id, practice_id, progress_poin, is_active, is_passed, practice:practice_id(practice_code)"
       )
-      .eq("user_id", user_id);
+      .eq("user_id", user_id)
+      .order("progress_practice_id", { ascending: true });
 
     return res.status(200).json({
       status: 200,
