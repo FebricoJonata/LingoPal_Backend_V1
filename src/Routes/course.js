@@ -29,7 +29,8 @@ courseRouter.get("/", async (req, res) => {
       .from("m_course")
       .select(
         "course_id, course_name, course_description, min_poin, user_level_id, category:course_category_id(course_category_name)"
-      );
+      )
+      .order("course_id", { ascending: true });
 
     return res.status(200).json({
       status: 200,
