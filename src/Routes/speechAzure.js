@@ -77,8 +77,8 @@ speechAzureRouter.use(express.raw({ limit: "100mb", type: "audio/wave" }));
 
 speechAzureRouter.post("/speech-to-text", async (req, res) => {
   try {
-    const audioData = req.body; // Assuming binary audio data is provided directly in the request body
-    const subscriptionKey = process.env.SPEECH_KEY; // Your Azure Cognitive Services subscription key
+    const { audioData, referenceText } = req.body; // Assuming binary audio data is provided directly in the request body
+    const subscriptionKey = process.env.SPEECH_KEY;
     const region = "eastasia";
 
     // Perform speech recognition
@@ -101,7 +101,8 @@ speechAzureRouter.post("/speech-to-text", async (req, res) => {
 
     // Perform pronunciation assessment
     const pronunciationScores = await pronunciationAssessmentContinuousWithFile(
-      buffer
+      buffer,
+      referenceText
     );
 
     // Combine speech recognition result with pronunciation scores
@@ -118,7 +119,10 @@ speechAzureRouter.post("/speech-to-text", async (req, res) => {
 });
 
 // Pronunciation Assessment using Microsoft Machine Learning SDK
-const pronunciationAssessmentContinuousWithFile = async (wavData) => {
+const pronunciationAssessmentContinuousWithFile = async (
+  wavData,
+  referenceText
+) => {
   return new Promise((resolve, reject) => {
     const audioConfig = sdk.AudioConfig.fromWavFileInput(wavData);
     const speechConfig = sdk.SpeechConfig.fromSubscription(
@@ -126,7 +130,7 @@ const pronunciationAssessmentContinuousWithFile = async (wavData) => {
       "eastasia"
     );
 
-    const referenceText = "It's a sunny day";
+    // const referenceText = "It's a sunny day";
     const pronunciationAssessmentConfig = new sdk.PronunciationAssessmentConfig(
       referenceText,
       sdk.PronunciationAssessmentGradingSystem.HundredMark,
