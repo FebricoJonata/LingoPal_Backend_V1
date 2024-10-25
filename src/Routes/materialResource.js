@@ -15,6 +15,12 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  *     description: Retrieve a list of materials resource from the database.
  *     tags:
  *      - Material Resource
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         description: Filter material by type
  *     responses:
  *       '200':
  *         description: A JSON array of materials resource.
@@ -25,7 +31,12 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  */
 materialResourceRouter.get("/", async (req, res) => {
   try {
-    let { data: words } = await db.from("m_material_resource").select("*");
+    const { type } = req.query;
+
+    let { data: words } = await db
+      .from("m_material_resource")
+      .select("*")
+      .eq("type", type);
 
     return res.status(200).json({
       status: 200,
