@@ -22,10 +22,10 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  *           type: string
  *         description: Filter material by type
  *       - in: query
- *         name: seaarch
+ *         name: search
  *         schema:
- *           seaarch: string
- *         description: Filter material by seaarch
+ *           search: string
+ *         description: Filter material by search
  *     responses:
  *       '200':
  *         description: A JSON array of materials resource.

@@ -77,7 +77,8 @@ speechAzureRouter.use(express.raw({ limit: "100mb", type: "audio/wave" }));
 
 speechAzureRouter.post("/speech-to-text", async (req, res) => {
   try {
-    const { audioData, referenceText } = req.body; // Assuming binary audio data is provided directly in the request body
+    const { referenceText } = req.query;
+    const { audioData } = req.body; // Assuming binary audio data is provided directly in the request body
     const subscriptionKey = process.env.SPEECH_KEY;
     const region = "eastasia";
 
