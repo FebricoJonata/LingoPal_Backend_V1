@@ -109,12 +109,14 @@ speechAzureRouter.post("/speech-to-text", async (req, res) => {
     );
 
     // Combine speech recognition result with pronunciation scores
-    const result = {
-      recognition: response.data,
-      pronunciationScores,
-    };
 
-    res.json(result);
+    return res.status(200).json({
+      status: 200,
+      body: {
+        text: response.data.DisplayText,
+        pronunciationScores,
+      },
+    });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Internal Server Error" });
