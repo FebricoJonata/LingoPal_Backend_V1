@@ -32,11 +32,16 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 materialResourceRouter.get("/", async (req, res) => {
   try {
     const { type } = req.query;
+    let words;
 
-    let { data: words } = await db
-      .from("m_material_resource")
-      .select("*")
-      .eq("type", type);
+    if (type) {
+      ({ data: words } = await db
+        .from("m_material_resource")
+        .select("*")
+        .eq("type", type));
+    } else {
+      ({ data: words } = await db.from("m_material_resource").select("*"));
+    }
 
     return res.status(200).json({
       status: 200,
