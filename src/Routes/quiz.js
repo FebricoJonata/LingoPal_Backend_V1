@@ -33,37 +33,14 @@ quizRouter.get("/", async (req, res) => {
   try {
     const { practice_id } = req.query;
 
-    if (!practice_id) {
-      return res.status(400).json({
-        status: 400,
-        error: "Bad Request: 'practice_id' is required",
-      });
+    const query = db.from("m_quiz").select("*");
+
+    if (practice_id) {
+      query.eq("practice_id", practice_id);
     }
 
-    // Query the database for quizzes with the matching practice_id
-    const { data: quiz, error } = await db
-      .from("m_quiz")
-      .select("*")
-      .eq("practice_id", practice_id);
+    const { quiz } = await query;
 
-    // Check if there was an error in the query
-    if (error) {
-      console.error("Error fetching quizzes:", error);
-      return res.status(500).json({
-        status: 500,
-        error: "Internal Server Error: Failed to fetch quizzes",
-      });
-    }
-
-    // If no quizzes were found, return a 404 status
-    if (quiz.length === 0) {
-      return res.status(404).json({
-        status: 404,
-        message: "No quizzes found for the given practice_id",
-      });
-    }
-
-    // Return the quizzes in the response
     return res.status(200).json({
       status: 200,
       data: quiz,
