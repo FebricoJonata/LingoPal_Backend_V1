@@ -31,21 +31,24 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  */
 materialResourceRouter.get("/", async (req, res) => {
   try {
-    const { type } = req.query;
-    let words;
+    const { type, search } = req.query;
+
+    const query = db.from("m_material_resource").select("*");
 
     if (type) {
-      ({ data: words } = await db
-        .from("m_material_resource")
-        .select("*")
-        .eq("type", type));
-    } else {
-      ({ data: words } = await db.from("m_material_resource").select("*"));
+      query.eq("type", type);
     }
+
+    if (search) {
+      query.like("title", `%${search}%`);
+    }
+
+    // Execute the query
+    const { data } = await query;
 
     return res.status(200).json({
       status: 200,
-      body: words,
+      body: data,
     });
   } catch (error) {
     return res.status(500).json({
