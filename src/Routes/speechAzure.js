@@ -109,7 +109,6 @@ speechAzureRouter.post("/speech-to-text", async (req, res) => {
     );
 
     // Combine speech recognition result with pronunciation scores
-
     return res.status(200).json({
       status: 200,
       body: {

@@ -82,55 +82,35 @@ quizRouter.get("/", async (req, res) => {
  * /api/quiz/admin:
  *   get:
  *     summary: Retrieve a paginated list of quizzes for admin
- *     description: Retrieve a list of quizzes from the database with optional filtering by practice ID and pagination.
+ *     description: Retrieve a list of quizzes from the database.
  *     tags:
  *       - Quiz
  *     parameters:
  *       - in: query
- *         name: practice_id
+ *         name: course_category_id
+ *         required: true
  *         schema:
  *           type: string
- *         description: Filter quizzes by practice ID
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *         description: The page number for pagination
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 10
- *         description: The number of quizzes to return per page
+ *         description: Filter quizzes by course category ID
  *     responses:
  *       '200':
  *         description: A JSON array of materials resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
  *       '500':
  *         description: Internal Server Error
  */
 quizRouter.get("/admin", async (req, res) => {
   try {
-    const { practice_id, page, limit } = req.query;
+    const { course_category_id } = req.query;
 
     // Parse page and limit, defaulting to 1 and 10 if not provided
-    const pageNum = page ? parseInt(page, 10) : 1; // Default to page 1
-    const limitNum = limit ? parseInt(limit, 10) : 10; // Default to limit of 10
-    const offset = (pageNum - 1) * limitNum;
+    // const pageNum = page ? parseInt(page, 10) : 1; // Default to page 1
+    // const limitNum = limit ? parseInt(limit, 10) : 10; // Default to limit of 10
+    // const offset = (pageNum - 1) * limitNum;
 
     // Build the query
-    let query = db
-      .from("m_quiz")
-      .select("*")
-      .range(offset, offset + limitNum - 1);
-
-    if (practice_id) {
-      query = query.eq("practice_id", practice_id);
-    }
+    let query = db.rpc("get_quizzes_by_category", {
+      icourse_category_id: course_category_id,
+    });
 
     const { data: quiz, error } = await query;
 
@@ -142,8 +122,8 @@ quizRouter.get("/admin", async (req, res) => {
     return res.status(200).json({
       status: 200,
       data: quiz,
-      page: pageNum,
-      limit: limitNum,
+      // page: pageNum,
+      // limit: limitNum,
     });
   } catch (error) {
     console.error("Internal Server Error:", error);
