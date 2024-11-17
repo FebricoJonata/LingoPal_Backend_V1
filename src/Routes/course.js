@@ -136,10 +136,12 @@ courseRouter.post("/update-progress", async (req, res) => {
   try {
     const { user_id, course_id } = req.body;
 
-    const { data, status } = await db.rpc("update_course_progress", {
+    await db.rpc("update_course_progress", {
       i_user_id: user_id,
       current_course_id: course_id,
     });
+
+    await db.rpc("update_user_progress", { i_user_id: user_id });
 
     // const currentTimestamp = new Date().toLocaleString("id-ID", {
     //   timeZone: "UTC",

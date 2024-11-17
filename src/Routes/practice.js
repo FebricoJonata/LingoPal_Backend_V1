@@ -217,10 +217,14 @@ practiceRouter.post("/progress", async (req, res) => {
       progress = insertedProgress;
     }
 
+    // Update course poin RPC (remote stored procedure)
     await db.rpc("update_user_course_progress_poin", {
       i_user_id: user_id,
       i_course_id: course_id,
     });
+
+    // Update user progress using RPC (remote stored procedure)
+    await db.rpc("update_user_progress", { i_user_id: user_id });
 
     return res.status(200).json({
       status: 200,
