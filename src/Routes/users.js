@@ -235,6 +235,9 @@ usersRouter.post("/signup", async (req, res) => {
       ])
       .select("user_id, name, email, phone_number, birth_date, gender, image");
 
+    // Insert user progress using rpc
+    await db.rpc("insert_user_progress", { i_user_id: newUser[0].user_id });
+
     return res
       .status(200)
       .json({ message: "User signed up successfully.", data: newUser });
