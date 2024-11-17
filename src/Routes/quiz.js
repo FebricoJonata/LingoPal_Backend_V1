@@ -102,11 +102,6 @@ quizRouter.get("/admin", async (req, res) => {
   try {
     const { course_category_id } = req.query;
 
-    // Parse page and limit, defaulting to 1 and 10 if not provided
-    // const pageNum = page ? parseInt(page, 10) : 1; // Default to page 1
-    // const limitNum = limit ? parseInt(limit, 10) : 10; // Default to limit of 10
-    // const offset = (pageNum - 1) * limitNum;
-
     // Build the query
     let query = db.rpc("get_quizzes_by_category", {
       icourse_category_id: course_category_id,
@@ -122,8 +117,6 @@ quizRouter.get("/admin", async (req, res) => {
     return res.status(200).json({
       status: 200,
       data: quiz,
-      // page: pageNum,
-      // limit: limitNum,
     });
   } catch (error) {
     console.error("Internal Server Error:", error);

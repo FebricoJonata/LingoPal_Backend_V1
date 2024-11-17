@@ -117,6 +117,8 @@ practiceRouter.get("/progress", async (req, res) => {
  *                 type: integer
  *               practice_id:
  *                 type: integer
+ *               course_id:
+ *                 type: integer
  *               progress_poin:
  *                 type: number
  *               is_active:
@@ -136,16 +138,6 @@ practiceRouter.get("/progress", async (req, res) => {
  *                   example: Course progress updated successfully.
  *                 body:
  *                   type: array
- *       '404':
- *         description: User not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: User not found.
  *       '500':
  *         description: Internal server error
  *         content:
@@ -166,6 +158,7 @@ practiceRouter.post("/progress", async (req, res) => {
       is_active,
       is_passed,
       practice_id,
+      course_id,
     } = req.body;
 
     const currentTimestamp = new Date().toLocaleString("id-ID", {
@@ -223,6 +216,11 @@ practiceRouter.post("/progress", async (req, res) => {
 
       progress = insertedProgress;
     }
+
+    await db.rpc("update_user_course_progress_poin", {
+      i_user_id: user_id,
+      i_course_id: course_id,
+    });
 
     return res.status(200).json({
       status: 200,

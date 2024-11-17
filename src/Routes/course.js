@@ -91,7 +91,7 @@ courseRouter.get("/progress", async (req, res) => {
 
 /**
  * @swagger
- * /api/course/progress:
+ * /api/course/update-progress:
  *   post:
  *     summary: Update user's course progress.
  *     description: Update user's course progress.
@@ -104,18 +104,10 @@ courseRouter.get("/progress", async (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               progress_course_id:
- *                 type: integer
  *               user_id:
  *                 type: integer
  *               course_id:
  *                 type: integer
- *               progress_poin:
- *                 type: number
- *               is_active:
- *                 type: boolean
- *               is_course_completed:
- *                 type: boolean
  *     responses:
  *       '200':
  *         description: Course progress updated successfully
@@ -129,16 +121,6 @@ courseRouter.get("/progress", async (req, res) => {
  *                   example: Course progress updated successfully.
  *                 body:
  *                   type: array
- *       '404':
- *         description: User not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: User not found.
  *       '500':
  *         description: Internal server error
  *         content:
@@ -150,77 +132,75 @@ courseRouter.get("/progress", async (req, res) => {
  *                   type: string
  *                   example: Internal server error.
  */
-courseRouter.post("/progress", async (req, res) => {
+courseRouter.post("/update-progress", async (req, res) => {
   try {
-    const {
-      progress_course_id,
-      user_id,
-      progress_poin,
-      is_active,
-      is_course_completed,
-      course_id,
-    } = req.body;
+    const { user_id, course_id } = req.body;
 
-    const currentTimestamp = new Date().toLocaleString("id-ID", {
-      timeZone: "UTC",
+    const { data, status } = await db.rpc("update_course_progress", {
+      i_user_id: user_id,
+      current_course_id: course_id,
     });
 
-    let progress;
+    // const currentTimestamp = new Date().toLocaleString("id-ID", {
+    //   timeZone: "UTC",
+    // });
 
-    if (progress_course_id === 0) {
-      // Insert a new record if progress_course_id is 0
-      const { data: insertedProgress, error: insertError } = await db
-        .from("t_user_course_progress")
-        .insert({
-          user_id: user_id,
-          course_id: course_id,
-          progress_poin: progress_poin,
-          is_active: is_active,
-          is_course_completed: is_course_completed,
-          updated_at: currentTimestamp,
-        })
-        .select(
-          "progress_course_id, user_id, course_id, progress_poin, is_active, is_course_completed"
-        );
+    // let progress;
 
-      if (insertError) {
-        return res.status(500).json({
-          status: 500,
-          error: "Failed to insert new record",
-        });
-      }
+    // if (progress_course_id === 0) {
+    //   // Insert a new record if progress_course_id is 0
+    //   const { data: insertedProgress, error: insertError } = await db
+    //     .from("t_user_course_progress")
+    //     .insert({
+    //       user_id: user_id,
+    //       course_id: course_id,
+    //       progress_poin: progress_poin,
+    //       is_active: is_active,
+    //       is_course_completed: is_course_completed,
+    //       updated_at: currentTimestamp,
+    //     })
+    //     .select(
+    //       "progress_course_id, user_id, course_id, progress_poin, is_active, is_course_completed"
+    //     );
 
-      progress = insertedProgress;
-    } else {
-      // Update the existing record if progress_course_id is not 0
-      const { data: updatedProgress, error: updateError } = await db
-        .from("t_user_course_progress")
-        .update({
-          progress_poin: progress_poin,
-          is_active: is_active,
-          is_course_completed: is_course_completed,
-          course_id: course_id,
-          updated_at: currentTimestamp,
-        })
-        .eq("user_id", user_id)
-        .eq("progress_course_id", progress_course_id)
-        .select(
-          "progress_course_id, user_id, course_id, progress_poin, is_active, is_course_completed"
-        );
+    //   if (insertError) {
+    //     return res.status(500).json({
+    //       status: 500,
+    //       error: "Failed to insert new record",
+    //     });
+    //   }
 
-      if (updateError) {
-        return res.status(500).json({
-          status: 500,
-          error: "Failed to update record",
-        });
-      }
+    //   progress = insertedProgress;
+    // } else {
+    //   // Update the existing record if progress_course_id is not 0
+    //   const { data: updatedProgress, error: updateError } = await db
+    //     .from("t_user_course_progress")
+    //     .update({
+    //       progress_poin: progress_poin,
+    //       is_active: is_active,
+    //       is_course_completed: is_course_completed,
+    //       course_id: course_id,
+    //       updated_at: currentTimestamp,
+    //     })
+    //     .eq("user_id", user_id)
+    //     .eq("progress_course_id", progress_course_id)
+    //     .select(
+    //       "progress_course_id, user_id, course_id, progress_poin, is_active, is_course_completed"
+    //     );
 
-      progress = updatedProgress;
-    }
+    //   if (updateError) {
+    //     return res.status(500).json({
+    //       status: 500,
+    //       error: "Failed to update record",
+    //     });
+    //   }
+
+    //   progress = updatedProgress;
+    // }
 
     return res.status(200).json({
       status: 200,
-      body: progress,
+      body: "Successfully update course progress",
     });
   } catch (error) {
     return res.status(500).json({
