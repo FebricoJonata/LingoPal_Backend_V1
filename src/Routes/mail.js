@@ -38,9 +38,18 @@ emailRouter.post("/send-verification", async (req, res) => {
     const mailOptions = {
       from: `"No Reply - [LingoPal]" <${process.env.SMTP_GMAIL_USERNAME}>`,
       to,
-      subject: "Verify Your Email Address",
-      html: `<p>Click the link below to verify your email:</p>
-             <a href="${verificationUrl}">Click here to verify account!</a>`,
+      subject: "LingoPal Email Verification 🤖🔠",
+      html: `
+      <p>Hello! 👋</p>
+      <p>You're almost there! Just one final step to complete your registration with <strong>LingoPal</strong>.</p>
+      <p>Click the link below to verify your email and start your English learning journey:</p>
+      <p style="text-align: center;">
+        <a href="${verificationUrl}">Verify Email</a>
+      </p>
+      <p>We're looking forward to having you with us! 😄</p>
+      <p>Thanks,</p>
+      <p><strong>LingoPal team 🤖</strong></p>
+    `,
     };
 
     // Send the email
