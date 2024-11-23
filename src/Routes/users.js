@@ -3,6 +3,7 @@ import { config as dotenvConfig } from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import moment from "moment";
 
 dotenvConfig();
 const usersRouter = express.Router();
@@ -306,6 +307,10 @@ usersRouter.post("/signin", async (req, res) => {
         .json({ error: "Unauthorized, incorrect email or password." });
     }
 
+    await db
+      .from("m_users")
+      .update("user_last_login", moment(Date.now()).format("mm-dd-yyyy"));
+
     // Generate JWT token
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
       expiresIn: "36h",
@@ -560,6 +565,28 @@ usersRouter.delete("/:id", async (req, res) => {
     return res.status(200).json({ message: "User deleted successfully." });
   } catch (error) {
     console.error("Error deleting user:", error.message);
+    return res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+usersRouter.get("/verify-account", async (req, res) => {
+  const { email } = req.query;
+
+  try {
+    const { error, data } = await db
+      .from("m_users")
+      .update({ fgVerified: true })
+      .eq("email", email);
+
+    if (error) {
+      return res
+        .status(500)
+        .json({ message: "Failed to verified the account!" });
+    }
+
+    // return res.status(200).json({ message: "Account has beeen verified" });
+    return res.status(200).redirect("https://lingopal-cms.vercel.app/");
+  } catch (error) {
     return res.status(500).json({ error: "Internal server error." });
   }
 });
