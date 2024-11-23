@@ -285,7 +285,7 @@ usersRouter.post("/signin", async (req, res) => {
     const { data: users, error } = await db
       .from("m_users")
       .select(
-        "user_id, name, email, phone_number, birth_date, gender, password, image"
+        "user_id, name, email, phone_number, birth_date, gender, password, image, fgVerified"
       )
       .eq("email", email)
       .limit(1);
@@ -301,6 +301,12 @@ usersRouter.post("/signin", async (req, res) => {
     // Compare the provided password with the hashed password stored in the database
     const passwordMatch = await bcrypt.compare(password, user.password);
 
+    if (!user.fgVerified) {
+      return res.status(402).json({
+        error: "Unauthorized, Please check your email to verify account first.",
+      });
+    }
+
     if (!passwordMatch) {
       return res
         .status(401)
@@ -309,7 +315,7 @@ usersRouter.post("/signin", async (req, res) => {
 
     await db
       .from("m_users")
-      .update("user_last_login", moment(Date.now()).format("mm-dd-yyyy"));
+      .update({ user_last_login: moment(Date.now()).format("mm-dd-yyyy") });
 
     // Generate JWT token
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
