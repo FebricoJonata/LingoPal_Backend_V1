@@ -43,8 +43,8 @@ emailRouter.post("/send-verification", async (req, res) => {
       <p>Hello! 👋</p>
       <p>You're almost there! Just one final step to complete your registration with <strong>LingoPal</strong>.</p>
       <p>Click the link below to verify your email and start your English learning journey:</p>
-      <p style="text-align: center;">
-        <a href="${verificationUrl}">Verify Email</a>
+      <p>
+        <a href="${verificationUrl}" style="display: inline-block; padding: 10px 20px; color: #fff; background-color: #638889; text-decoration: none; border-radius: 4px; font-size: 16px;">Verify Email</a>
       </p>
       <p>We're looking forward to having you with us! 😄</p>
       <p>Thanks,</p>
