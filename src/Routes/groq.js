@@ -1,6 +1,8 @@
 import { Groq } from "groq-sdk";
 import { config as dotenvConfig } from "dotenv";
 import express from "express";
+import { verifyToken } from "./helpers/middleware.js";
+
 dotenvConfig();
 
 const groqRouter = express.Router();
@@ -10,7 +12,7 @@ const groq = new Groq({
 
 let conversationHistory = [];
 
-groqRouter.post("/chat-completion", async (req, res) => {
+groqRouter.post("/chat-completion", verifyToken, async (req, res) => {
   try {
     const { conversation } = req.body;
 

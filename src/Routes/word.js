@@ -1,6 +1,7 @@
 import express from "express";
 import { config as dotenvConfig } from "dotenv";
 import { createClient } from "@supabase/supabase-js";
+import { verifyToken } from "./helpers/middleware.js";
 
 dotenvConfig();
 const wordsRouter = express.Router();
@@ -23,7 +24,7 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  *             schema:
  *               type: array
  */
-wordsRouter.get("/", async (req, res) => {
+wordsRouter.get("/", verifyToken, async (req, res) => {
   try {
     let { data: words } = await db.from("m_word").select("word, alphabet");
 

@@ -1,9 +1,10 @@
 import express from "express";
 import { config as dotenvConfig } from "dotenv";
 import axios from "axios";
-import fs from "fs";
 import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 import _ from "lodash";
+import { verifyToken } from "./helpers/middleware.js";
+
 dotenvConfig();
 
 const speechAzureRouter = express.Router();
@@ -40,7 +41,7 @@ const speechAzureRouter = express.Router();
  *                   format: base64
  *                   description: Base64 encoded audio content.
  */
-speechAzureRouter.post("/text-to-speech", async (req, res) => {
+speechAzureRouter.post("/text-to-speech", verifyToken, async (req, res) => {
   try {
     const { text } = req.body;
     const speechEndpoint = `https://eastasia.tts.speech.microsoft.com/cognitiveservices/v1`;

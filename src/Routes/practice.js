@@ -1,6 +1,7 @@
 import express from "express";
 import { config as dotenvConfig } from "dotenv";
 import { createClient } from "@supabase/supabase-js";
+import { verifyToken } from "./helpers/middleware.js";
 
 dotenvConfig();
 const practiceRouter = express.Router();
@@ -29,7 +30,7 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  *             schema:
  *               type: array
  */
-practiceRouter.get("/", async (req, res) => {
+practiceRouter.get("/", verifyToken, async (req, res) => {
   try {
     const { course_id } = req.query;
 
@@ -72,7 +73,7 @@ practiceRouter.get("/", async (req, res) => {
  *             schema:
  *               type: array
  */
-practiceRouter.get("/progress", async (req, res) => {
+practiceRouter.get("/progress", verifyToken, async (req, res) => {
   try {
     const { user_id } = req.query;
 
@@ -149,7 +150,7 @@ practiceRouter.get("/progress", async (req, res) => {
  *                   type: string
  *                   example: Internal server error.
  */
-practiceRouter.post("/progress", async (req, res) => {
+practiceRouter.post("/progress", verifyToken, async (req, res) => {
   try {
     const {
       progress_practice_id,

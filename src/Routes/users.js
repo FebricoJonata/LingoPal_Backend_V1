@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import moment from "moment";
+import { verifyToken } from "./helpers/middleware.js";
 
 dotenvConfig();
 const usersRouter = express.Router();
@@ -32,7 +33,7 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  *             schema:
  *               type: array
  */
-usersRouter.get("/", async (req, res) => {
+usersRouter.get("/", verifyToken, async (req, res) => {
   try {
     const { email } = req.query;
     let fetchUsers;
@@ -132,7 +133,7 @@ usersRouter.get("/", async (req, res) => {
  *                   type: string
  *                   example: Internal server error
  */
-usersRouter.get("/status", async (req, res) => {
+usersRouter.get("/status", verifyToken, async (req, res) => {
   try {
     const { user_id } = req.query;
     let fetchUsers;
@@ -500,7 +501,7 @@ usersRouter.post("/admin-signin", async (req, res) => {
  *                   type: string
  *                   example: Internal server error.
  */
-usersRouter.post("/update", async (req, res) => {
+usersRouter.post("/update", verifyToken, async (req, res) => {
   const { user_id, name, phone_number, gender, birth_date, image } = req.body;
 
   try {
@@ -558,7 +559,7 @@ usersRouter.post("/update", async (req, res) => {
  *       '500':
  *         description: Internal server error.
  */
-usersRouter.delete("/:id", async (req, res) => {
+usersRouter.delete("/:id", verifyToken, async (req, res) => {
   const userId = req.params.id;
 
   try {

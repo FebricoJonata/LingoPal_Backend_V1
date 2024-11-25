@@ -1,6 +1,7 @@
 import express from "express";
 import { config as dotenvConfig } from "dotenv";
 import { createClient } from "@supabase/supabase-js";
+import { verifyToken } from "./helpers/middleware.js";
 
 dotenvConfig();
 const materialResourceRouter = express.Router();
@@ -34,7 +35,7 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  *             schema:
  *               type: array
  */
-materialResourceRouter.get("/", async (req, res) => {
+materialResourceRouter.get("/", verifyToken, async (req, res) => {
   try {
     const { type, search } = req.query;
 
