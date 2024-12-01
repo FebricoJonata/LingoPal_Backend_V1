@@ -305,12 +305,12 @@ usersRouter.post("/signin", async (req, res) => {
 
     await db
       .from("m_users")
-      .update({ user_last_login: moment(Date.now()).format("mm-dd-yyyy") })
+      .update({ user_last_login: moment(Date.now()).format("MM-DD-YYYY") })
       .eq("email", email);
 
     // Generate JWT token
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "36h",
+      expiresIn: "168h",
     });
 
     // Return user data and JWT token
