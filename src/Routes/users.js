@@ -41,14 +41,12 @@ usersRouter.get("/", verifyToken, async (req, res) => {
     if (email) {
       fetchUsers = await db
         .from("m_users")
-        .select("user_id, name, email, phone_number, birth_date, gender, image")
+        .select("user_id, name, email, birth_date, image")
         .eq("email", email);
     } else {
       fetchUsers = await db
         .from("m_users")
-        .select(
-          "user_id, name, email, phone_number, birth_date, gender, image"
-        );
+        .select("user_id, name, email, birth_date, image");
     }
 
     return res.status(200).json({
@@ -178,18 +176,13 @@ usersRouter.get("/status", verifyToken, async (req, res) => {
  *                 type: string
  *               password:
  *                 type: string
- *               phone_number:
- *                 type: string
  *               birth_date:
- *                 type: string
- *               gender:
  *                 type: string
  *             required:
  *               - name
  *               - email
  *               - password
  *               - birth_date
- *               - gender
  *     responses:
  *       '200':
  *         description: User signed up successfully.
@@ -206,7 +199,7 @@ usersRouter.get("/status", verifyToken, async (req, res) => {
  *         description: Internal server error.
  */
 usersRouter.post("/signup", async (req, res) => {
-  const { name, email, password, phone_number, birth_date, gender } = req.body;
+  const { name, email, password, birth_date } = req.body;
 
   try {
     // Check if the user already exists
@@ -230,12 +223,10 @@ usersRouter.post("/signup", async (req, res) => {
           name,
           email,
           password: hashedPassword,
-          phone_number,
           birth_date,
-          gender,
         },
       ])
-      .select("user_id, name, email, phone_number, birth_date, gender, image");
+      .select("user_id, name, email, birth_date, image");
 
     // Insert user progress using rpc
     await db.rpc("insert_user_progress", { i_user_id: newUser[0].user_id });
@@ -285,9 +276,7 @@ usersRouter.post("/signin", async (req, res) => {
     // Fetch user data from Supabase table
     const { data: users, error } = await db
       .from("m_users")
-      .select(
-        "user_id, name, email, phone_number, birth_date, gender, password, image, fgVerified"
-      )
+      .select("user_id, name, email, birth_date, password, image, fgVerified")
       .eq("email", email)
       .limit(1);
 
@@ -330,9 +319,7 @@ usersRouter.post("/signin", async (req, res) => {
         user_id: user.user_id,
         name: user.name,
         email: user.email,
-        phone_number: user.phone_number,
         birth_date: user.birth_date,
-        gender: user.gender,
         image: user.image,
       },
       token,
@@ -379,9 +366,7 @@ usersRouter.post("/admin-signin", async (req, res) => {
     // Fetch user data from Supabase table
     const { data: users, error } = await db
       .from("m_users")
-      .select(
-        "user_id, name, email, phone_number, birth_date, gender, password, image, fgAdmin"
-      )
+      .select("user_id, name, email, birth_date, password, image, fgAdmin")
       .eq("email", email)
       .limit(1);
 
@@ -425,9 +410,7 @@ usersRouter.post("/admin-signin", async (req, res) => {
         user_id: user.user_id,
         name: user.name,
         email: user.email,
-        phone_number: user.phone_number,
         birth_date: user.birth_date,
-        gender: user.gender,
         image: user.image,
         fgAdmin: user.fgAdmin,
       },
@@ -444,7 +427,7 @@ usersRouter.post("/admin-signin", async (req, res) => {
  * /api/users/update:
  *   post:
  *     summary: Update user information
- *     description: Update the name, phone number, gender, and birth date of a user.
+ *     description: Update the name, and birth date of a user.
  *     tags:
  *       - Users
  *     requestBody:
@@ -457,10 +440,6 @@ usersRouter.post("/admin-signin", async (req, res) => {
  *               user_id:
  *                 type: integer
  *               name:
- *                 type: string
- *               phone_number:
- *                 type: string
- *               gender:
  *                 type: string
  *               birth_date:
  *                 type: string
@@ -502,22 +481,18 @@ usersRouter.post("/admin-signin", async (req, res) => {
  *                   example: Internal server error.
  */
 usersRouter.post("/update", verifyToken, async (req, res) => {
-  const { user_id, name, phone_number, gender, birth_date, image } = req.body;
+  const { user_id, name, birth_date, image } = req.body;
 
   try {
     const { data: users, error } = await db
       .from("m_users")
       .update({
         name: name,
-        phone_number: phone_number,
-        gender: gender,
         birth_date: birth_date,
         image: image,
       })
       .eq("user_id", user_id)
-      .select(
-        "user_id, name, email, phone_number, birth_date, gender, password, image"
-      );
+      .select("user_id, name, email, birth_date, password, image");
     if (error) {
       return res.status(500).json({ error: error.message });
     }
