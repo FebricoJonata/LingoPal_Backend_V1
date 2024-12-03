@@ -568,7 +568,9 @@ usersRouter.get("/verify-account", async (req, res) => {
     }
 
     // return res.status(200).json({ message: "Account has beeen verified" });
-    return res.status(200).redirect("https://lingopal-cms.vercel.app/");
+    return res
+      .status(200)
+      .redirect("https://lingopal-cms.vercel.app/success-verified");
   } catch (error) {
     return res.status(500).json({ error: "Internal server error." });
   }
