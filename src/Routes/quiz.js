@@ -128,4 +128,25 @@ quizRouter.get("/admin", async (req, res) => {
   }
 });
 
+quizRouter.post("/admin/create", async (req, res) => {
+  try {
+    const { question, practice_id } = req.body;
+
+    const { data } = db
+      .from("m_quiz")
+      .insert({ question: question, practice_id: practice_id });
+
+    return res.status(200).json({
+      status: 200,
+      message: "Quiz created successfully",
+      data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      message: "Internal Server Error",
+    });
+  }
+});
+
 export default quizRouter;
