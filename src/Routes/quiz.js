@@ -132,14 +132,19 @@ quizRouter.post("/admin/create", async (req, res) => {
   try {
     const { question, practice_id } = req.body;
 
-    const { data } = db
+    const { data, error } = await db
       .from("m_quiz")
-      .insert({ question: question, practice_id: practice_id });
+      .insert([{ question, practice_id }])
+      .select("*");
+
+    if (error) {
+      throw error;
+    }
 
     return res.status(200).json({
       status: 200,
       message: "Quiz created successfully",
-      data,
+      data: data,
     });
   } catch (error) {
     return res.status(500).json({
