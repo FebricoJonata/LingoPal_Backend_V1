@@ -130,11 +130,11 @@ quizRouter.get("/admin", async (req, res) => {
 
 quizRouter.post("/admin/create", async (req, res) => {
   try {
-    const { question, practice_id } = req.body;
+    const { question, practice_id, answer_key, choices } = req.body;
 
     const { data, error } = await db
       .from("m_quiz")
-      .insert([{ question, practice_id }])
+      .insert([{ question, practice_id, answer_key, choices }])
       .select("*");
 
     if (error) {
