@@ -154,4 +154,66 @@ quizRouter.post("/admin/create", async (req, res) => {
   }
 });
 
+quizRouter.put("/admin/update", async (req, res) => {
+  try {
+    const { id, question, practice_id, answer_key, choices } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        status: 400,
+        message: "Quiz ID is required in the request body",
+      });
+    }
+
+    const { data, error } = await db
+      .from("m_quiz")
+      .update({ question, practice_id, answer_key, choices })
+      .match({ quiz_id: id })
+      .select("*");
+
+    if (error) {
+      throw error;
+    }
+
+    // If no data is returned (i.e., quiz not found), return a 404 error
+    if (data.length === 0) {
+      return res.status(404).json({
+        status: 404,
+        message: "Quiz not found",
+      });
+    }
+
+    // Return the updated data
+    return res.status(200).json({
+      status: 200,
+      message: "Quiz updated successfully",
+      data: data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      message: "Internal Server Error",
+    });
+  }
+});
+
+quizRouter.delete("/admin/delete/:id", async (req, res) => {
+  try {
+    const { quiz_id } = req.params.id;
+
+    const { error } = await db.from("m_quiz").delete().eq("quiz_id", quiz_id);
+
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.status(200).json({ message: "Quiz deleted successfully." });
+  } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      message: "Internal Server Error",
+    });
+  }
+});
+
 export default quizRouter;
