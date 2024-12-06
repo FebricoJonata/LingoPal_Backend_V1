@@ -197,9 +197,16 @@ quizRouter.put("/admin/update", async (req, res) => {
   }
 });
 
-quizRouter.delete("/admin/delete/:id", async (req, res) => {
+quizRouter.delete("/admin/delete/:quiz_id", async (req, res) => {
   try {
-    const { quiz_id } = req.params.id;
+    const { quiz_id } = req.params;
+
+    if (!quiz_id) {
+      return res.status(400).json({
+        status: 400,
+        message: "Quiz ID is required",
+      });
+    }
 
     const { error } = await db.from("m_quiz").delete().eq("quiz_id", quiz_id);
 
