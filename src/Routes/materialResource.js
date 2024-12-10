@@ -35,7 +35,7 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  *             schema:
  *               type: array
  */
-materialResourceRouter.get("/", verifyToken, async (req, res) => {
+materialResourceRouter.get("/", async (req, res) => {
   try {
     const { type, search } = req.query;
 

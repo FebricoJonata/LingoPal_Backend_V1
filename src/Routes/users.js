@@ -33,7 +33,7 @@ const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
  *             schema:
  *               type: array
  */
-usersRouter.get("/", verifyToken, async (req, res) => {
+usersRouter.get("/", async (req, res) => {
   try {
     const { email } = req.query;
     let fetchUsers;
