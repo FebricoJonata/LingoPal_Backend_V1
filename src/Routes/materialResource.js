@@ -135,7 +135,7 @@ materialResourceRouter.put("/admin/update", async (req, res) => {
   }
 });
 
-quizRouter.delete("/admin/delete/:id", async (req, res) => {
+materialResourceRouter.delete("/admin/delete/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
