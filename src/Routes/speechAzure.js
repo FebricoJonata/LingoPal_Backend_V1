@@ -154,16 +154,28 @@ const pronunciationAssessmentContinuousWithFile = async (
         const pronunciationResult =
           sdk.PronunciationAssessmentResult.fromResult(e.result);
         const scores = {
-          accuracyScore: parseInt(pronunciationResult.accuracyScore, 10),
-          pronunciationScore: parseInt(
-            pronunciationResult.pronunciationScore,
-            10
+          accuracyScore: Math.max(
+            1,
+            Math.min(100, parseFloat(pronunciationResult.accuracyScore) || 0)
           ),
-          completenessScore: parseInt(
-            pronunciationResult.completenessScore,
-            10
+          pronunciationScore: Math.max(
+            1,
+            Math.min(
+              100,
+              parseFloat(pronunciationResult.pronunciationScore) || 0
+            )
           ),
-          fluencyScore: parseInt(pronunciationResult.fluencyScore, 10),
+          completenessScore: Math.max(
+            1,
+            Math.min(
+              100,
+              parseFloat(pronunciationResult.completenessScore) || 0
+            )
+          ),
+          fluencyScore: Math.max(
+            1,
+            Math.min(100, parseFloat(pronunciationResult.fluencyScore) || 0)
+          ),
         };
         resolve(scores);
       } else {
