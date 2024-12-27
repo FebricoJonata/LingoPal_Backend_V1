@@ -282,7 +282,7 @@ usersRouter.post("/signin", async (req, res) => {
 
     if (error || !users || users.length === 0) {
       return res
-        .status(422)
+        .status(403)
         .json({ error: "Unauthorized, incorrect email or password." });
     }
 
@@ -299,7 +299,7 @@ usersRouter.post("/signin", async (req, res) => {
 
     if (!passwordMatch) {
       return res
-        .status(422)
+        .status(403)
         .json({ error: "Unauthorized, incorrect email or password." });
     }
 
@@ -373,7 +373,7 @@ usersRouter.post("/admin-signin", async (req, res) => {
 
     if (error || !users || users.length === 0) {
       return res
-        .status(422)
+        .status(403)
         .json({ error: "Unauthorized, incorrect email or password." });
     }
 
@@ -382,7 +382,7 @@ usersRouter.post("/admin-signin", async (req, res) => {
     // Check if the user is an admin (fgAdmin must be true)
     if (!user.fgAdmin) {
       return res
-        .status(422)
+        .status(403)
         .json({ error: "Unauthorized, user is not an admin." });
     }
 
@@ -391,7 +391,7 @@ usersRouter.post("/admin-signin", async (req, res) => {
 
     if (!passwordMatch) {
       return res
-        .status(422)
+        .status(403)
         .json({ error: "Unauthorized, incorrect email or password." });
     }
 
