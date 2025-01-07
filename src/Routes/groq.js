@@ -12,6 +12,50 @@ const groq = new Groq({
 
 let conversationHistory = [];
 
+/**
+ * @swagger
+ * /api/chat/chat-completion:
+ *   post:
+ *     summary: Generate a conversational response from Lingo, the English assistant
+ *     tags:
+ *       - Chat
+ *     security:
+ *       - bearerAuth: [] # Include Bearer Token authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               conversation:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     role:
+ *                       type: string
+ *                       enum: [system, user, assistant]
+ *                       description: The role of the message sender
+ *                       example: user
+ *                     content:
+ *                       type: string
+ *                       description: The content of the message
+ *                       example: "What is your name?"
+ *                 description: Array of messages in the conversation
+ *                 example:
+ *                   - role: user
+ *                     content: "How do I improve my English?"
+ *                   - role: system
+ *                     content: "You're doing well! Let's practice more."
+ *     responses:
+ *       200:
+ *         description: Successfully generated a response
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ */
 groqRouter.post("/chat-completion", verifyToken, async (req, res) => {
   try {
     const { conversation } = req.body;

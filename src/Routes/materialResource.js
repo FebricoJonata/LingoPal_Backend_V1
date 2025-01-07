@@ -64,6 +64,52 @@ materialResourceRouter.get("/", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/material-resource/admin/create:
+ *   post:
+ *     summary: Create a new material resource
+ *     description: Add a new material resource to the database.
+ *     tags:
+ *      - Material Resource
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *               source:
+ *                 type: string
+ *               cover:
+ *                 type: string
+ *               content:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: Material resource created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *       '500':
+ *         description: Internal Server Error
+ */
 materialResourceRouter.post("/admin/create", async (req, res) => {
   try {
     const { title, type, category, source, cover, content, description } =
@@ -91,6 +137,59 @@ materialResourceRouter.post("/admin/create", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/material-resource/admin/update:
+ *   put:
+ *     summary: Update an existing material resource
+ *     description: Update an existing material resource in the database.
+ *     tags:
+ *      - Material Resource
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *                 description: The ID of the material to update
+ *               title:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *               source:
+ *                 type: string
+ *               cover:
+ *                 type: string
+ *               content:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *     responses:
+ *       '200':
+ *         description: Material updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *       '400':
+ *         description: ID is required in the request body
+ *       '404':
+ *         description: Data not found
+ *       '500':
+ *         description: Internal Server Error
+ */
 materialResourceRouter.put("/admin/update", async (req, res) => {
   try {
     const { id, title, type, category, source, cover, content, description } =
@@ -135,6 +234,29 @@ materialResourceRouter.put("/admin/update", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/material-resource/admin/delete/{id}:
+ *   delete:
+ *     summary: Delete a material resource
+ *     description: Delete a material resource from the database by ID.
+ *     tags:
+ *      - Material Resource
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the material to delete
+ *     responses:
+ *       '200':
+ *         description: Material deleted successfully.
+ *       '400':
+ *         description: ID is required
+ *       '500':
+ *         description: Internal Server Error
+ */
 materialResourceRouter.delete("/admin/delete/:id", async (req, res) => {
   try {
     const { id } = req.params;

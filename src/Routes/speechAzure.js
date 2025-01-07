@@ -76,6 +76,36 @@ speechAzureRouter.post("/text-to-speech", verifyToken, async (req, res) => {
 // Middleware to parse binary request body
 speechAzureRouter.use(express.raw({ limit: "100mb", type: "audio/wave" }));
 
+/**
+ * @swagger
+ * /api/speech/speech-to-text:
+ *   post:
+ *     summary: Convert audio data to text and perform pronunciation assessment
+ *     tags:
+ *       - Speech
+ *     parameters:
+ *       - in: query
+ *         name: referenceText
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Reference text to compare pronunciation against
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         audio/wave:
+ *           schema:
+ *             type: string
+ *             format: binary
+ *           example: (binary audio data)
+ *     responses:
+ *       200:
+ *         description: Speech recognition result and pronunciation assessment scores
+ *       400:
+ *         description: Invalid input or missing parameters
+ *       500:
+ *         description: Internal Server Error
+ */
 speechAzureRouter.post("/speech-to-text", async (req, res) => {
   try {
     const { referenceText } = req.query;

@@ -41,18 +41,25 @@ const options = {
       description: "Express LingoPal API",
     },
     servers: [
-      {
-        url: "http://localhost:7700",
-        description: "Local",
+      { url: "http://localhost:7700", description: "Local" },
+      { url: "https://lingo-pal-backend-v1.vercel.app", description: "Cloud" },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT", // Optional: to specify the token type
+        },
       },
+    },
+    security: [
       {
-        url: "https://lingo-pal-backend-v1.vercel.app",
-        description: "Cloud",
+        bearerAuth: [], // Apply globally if required
       },
     ],
   },
-  // This is to call all the file
-  apis: ["src/**/*.js"],
+  apis: ["src/**/*.js"], // Paths to your endpoint files
 };
 
 const specs = swaggerJsDoc(options);

@@ -338,7 +338,7 @@ usersRouter.post("/signin", async (req, res) => {
  *     summary: Sign in an admin
  *     description: Authenticate an admin in the Supabase authentication system.
  *     tags:
- *       - Admins
+ *       - Users
  *     requestBody:
  *       content:
  *         application/json:
@@ -512,45 +512,45 @@ usersRouter.post("/update", verifyToken, async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /api/users/{id}:
- *   delete:
- *     summary: Delete a user
- *     description: Delete a user from the Supabase database by ID.
- *     tags:
- *       - Users
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: ID of the user to delete
- *         schema:
- *           type: string
- *     responses:
- *       '200':
- *         description: User deleted successfully.
- *       '404':
- *         description: User not found.
- *       '500':
- *         description: Internal server error.
- */
-usersRouter.delete("/:id", verifyToken, async (req, res) => {
-  const userId = req.params.id;
+// /**
+//  * @swagger
+//  * /api/users/{id}:
+//  *   delete:
+//  *     summary: Delete a user
+//  *     description: Delete a user from the Supabase database by ID.
+//  *     tags:
+//  *       - Users
+//  *     parameters:
+//  *       - in: path
+//  *         name: id
+//  *         required: true
+//  *         description: ID of the user to delete
+//  *         schema:
+//  *           type: string
+//  *     responses:
+//  *       '200':
+//  *         description: User deleted successfully.
+//  *       '404':
+//  *         description: User not found.
+//  *       '500':
+//  *         description: Internal server error.
+//  */
+// usersRouter.delete("/:id", verifyToken, async (req, res) => {
+//   const userId = req.params.id;
 
-  try {
-    // Delete the user from the Supabase database
-    const { error } = await db.from("m_users").delete().eq("user_id", userId);
+//   try {
+//     // Delete the user from the Supabase database
+//     const { error } = await db.from("m_users").delete().eq("user_id", userId);
 
-    if (error) {
-      return res.status(500).json({ error: error.message });
-    }
-    return res.status(200).json({ message: "User deleted successfully." });
-  } catch (error) {
-    console.error("Error deleting user:", error.message);
-    return res.status(500).json({ error: "Internal server error." });
-  }
-});
+//     if (error) {
+//       return res.status(500).json({ error: error.message });
+//     }
+//     return res.status(200).json({ message: "User deleted successfully." });
+//   } catch (error) {
+//     console.error("Error deleting user:", error.message);
+//     return res.status(500).json({ error: "Internal server error." });
+//   }
+// });
 
 usersRouter.get("/verify-account", async (req, res) => {
   const { email } = req.query;

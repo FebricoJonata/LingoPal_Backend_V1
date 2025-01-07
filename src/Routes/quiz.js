@@ -82,7 +82,7 @@ quizRouter.get("/", verifyToken, async (req, res) => {
  * @swagger
  * /api/quiz/admin:
  *   get:
- *     summary: Retrieve a paginated list of quizzes for admin
+ *     summary: Retrieve a list of quizzes for admin
  *     description: Retrieve a list of quizzes from the database.
  *     tags:
  *       - Quiz
@@ -128,6 +128,54 @@ quizRouter.get("/admin", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/quiz/admin/create:
+ *   post:
+ *     summary: Create a new quiz
+ *     description: Add a new quiz to the database.
+ *     tags:
+ *       - Quiz
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               question:
+ *                 type: string
+ *                 description: The quiz question
+ *               practice_id:
+ *                 type: integer
+ *                 description: The ID of the associated practice
+ *               answer_key:
+ *                 type: string
+ *                 description: The correct answer key for the quiz
+ *               choices:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: The list of possible answers
+ *     responses:
+ *       '200':
+ *         description: Quiz created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                   example: Quiz created successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ */
 quizRouter.post("/admin/create", async (req, res) => {
   try {
     const { question, practice_id, answer_key, choices } = req.body;
@@ -154,6 +202,70 @@ quizRouter.post("/admin/create", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/quiz/admin/update:
+ *   put:
+ *     summary: Update an existing quiz
+ *     description: Update the details of an existing quiz by its ID.
+ *     tags:
+ *       - Quiz
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *                 description: The ID of the quiz to update
+ *               question:
+ *                 type: string
+ *                 description: The updated quiz question
+ *               practice_id:
+ *                 type: integer
+ *                 description: The updated associated practice ID
+ *               answer_key:
+ *                 type: string
+ *                 description: The updated correct answer key
+ *               choices:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: The updated list of possible answers
+ *     responses:
+ *       '200':
+ *         description: Quiz updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                   example: Quiz updated successfully
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       '404':
+ *         description: Quiz not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 404
+ *                 message:
+ *                   type: string
+ *                   example: Quiz not found
+ */
 quizRouter.put("/admin/update", async (req, res) => {
   try {
     const { id, question, practice_id, answer_key, choices } = req.body;
@@ -197,6 +309,46 @@ quizRouter.put("/admin/update", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/quiz/admin/delete/{quiz_id}:
+ *   delete:
+ *     summary: Delete a quiz
+ *     description: Remove a quiz from the database by its ID.
+ *     tags:
+ *       - Quiz
+ *     parameters:
+ *       - in: path
+ *         name: quiz_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the quiz to delete
+ *     responses:
+ *       '200':
+ *         description: Quiz deleted successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Quiz deleted successfully
+ *       '400':
+ *         description: Quiz ID is required.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 400
+ *                 message:
+ *                   type: string
+ *                   example: Quiz ID is required
+ */
 quizRouter.delete("/admin/delete/:quiz_id", async (req, res) => {
   try {
     const { quiz_id } = req.params;
