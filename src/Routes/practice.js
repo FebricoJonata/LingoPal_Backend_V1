@@ -68,10 +68,6 @@ practiceRouter.get("/", verifyToken, async (req, res) => {
  *     responses:
  *       '200':
  *         description: A JSON array of practices progress.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
  */
 practiceRouter.get("/progress", verifyToken, async (req, res) => {
   try {

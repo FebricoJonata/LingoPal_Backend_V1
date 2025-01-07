@@ -78,27 +78,27 @@ quizRouter.get("/", verifyToken, async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /api/quiz/admin:
- *   get:
- *     summary: Retrieve a list of quizzes for admin
- *     description: Retrieve a list of quizzes from the database.
- *     tags:
- *       - Quiz
- *     parameters:
- *       - in: query
- *         name: course_category_id
- *         required: true
- *         schema:
- *           type: string
- *         description: Filter quizzes by course category ID
- *     responses:
- *       '200':
- *         description: A JSON array of materials resource.
- *       '500':
- *         description: Internal Server Error
- */
+// /**
+//  * @swagger
+//  * /api/quiz/admin:
+//  *   get:
+//  *     summary: Retrieve a list of quizzes for admin
+//  *     description: Retrieve a list of quizzes from the database.
+//  *     tags:
+//  *       - Quiz
+//  *     parameters:
+//  *       - in: query
+//  *         name: course_category_id
+//  *         required: true
+//  *         schema:
+//  *           type: string
+//  *         description: Filter quizzes by course category ID
+//  *     responses:
+//  *       '200':
+//  *         description: A JSON array of materials resource.
+//  *       '500':
+//  *         description: Internal Server Error
+//  */
 quizRouter.get("/admin", async (req, res) => {
   try {
     const { course_category_id } = req.query;
