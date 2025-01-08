@@ -14,13 +14,13 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-transporter.verify((error) => {
-  if (error) {
-    console.error("Error configuring email transporter:", error.message);
-  } else {
-    console.log("Email transporter configured successfully.");
-  }
-});
+// transporter.verify((error) => {
+//   if (error) {
+//     console.error("Error configuring email transporter:", error.message);
+//   } else {
+//     console.log("Email transporter configured successfully.");
+//   }
+// });
 
 // Email sending endpoint
 emailRouter.post("/send-verification", async (req, res) => {
