@@ -92,6 +92,12 @@ quizRouter.get("/", verifyToken, async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
+ *         name: course_name
+ *         schema:
+ *           type: string
+ *         name: question
+ *         schema:
+ *           type: string
  *         description: Filter quizzes by course category ID
  *     responses:
  *       '200':
@@ -101,11 +107,13 @@ quizRouter.get("/", verifyToken, async (req, res) => {
  */
 quizRouter.get("/admin", async (req, res) => {
   try {
-    const { course_category_id } = req.query;
+    const { course_category_id, course_name, question } = req.query;
 
     // Build the query
     let query = db.rpc("get_quizzes_by_category", {
       icourse_category_id: course_category_id,
+      icourse_name: course_name,
+      iquestion: question,
     });
 
     const { data: quiz, error } = await query;
