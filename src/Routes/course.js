@@ -181,10 +181,10 @@ courseRouter.post("/update-progress", verifyToken, async (req, res) => {
  */
 courseRouter.get("/fetch-course-dropdown", async (req, res) => {
   try {
-    const { course_category_id } = req.query; // Get the course_category_id from query parameters
+    const { course_category_id } = req.query;
 
     const data = await db.rpc("fetch_practice_and_course", {
-      course_category_id: Number(course_category_id),
+      i_course_category_id: Number(course_category_id),
     }); // Pass category filter to DB
 
     return res.status(200).json({
