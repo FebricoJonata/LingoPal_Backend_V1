@@ -146,66 +146,40 @@ courseRouter.post("/update-progress", verifyToken, async (req, res) => {
     // Update user progress using RPC (remote stored procedure)
     await db.rpc("update_user_progress", { i_user_id: user_id });
 
-    // const currentTimestamp = new Date().toLocaleString("id-ID", {
-    //   timeZone: "UTC",
-    // });
-
-    // let progress;
-
-    // if (progress_course_id === 0) {
-    //   // Insert a new record if progress_course_id is 0
-    //   const { data: insertedProgress, error: insertError } = await db
-    //     .from("t_user_course_progress")
-    //     .insert({
-    //       user_id: user_id,
-    //       course_id: course_id,
-    //       progress_poin: progress_poin,
-    //       is_active: is_active,
-    //       is_course_completed: is_course_completed,
-    //       updated_at: currentTimestamp,
-    //     })
-    //     .select(
-    //       "progress_course_id, user_id, course_id, progress_poin, is_active, is_course_completed"
-    //     );
-
-    //   if (insertError) {
-    //     return res.status(500).json({
-    //       status: 500,
-    //       error: "Failed to insert new record",
-    //     });
-    //   }
-
-    //   progress = insertedProgress;
-    // } else {
-    //   // Update the existing record if progress_course_id is not 0
-    //   const { data: updatedProgress, error: updateError } = await db
-    //     .from("t_user_course_progress")
-    //     .update({
-    //       progress_poin: progress_poin,
-    //       is_active: is_active,
-    //       is_course_completed: is_course_completed,
-    //       course_id: course_id,
-    //       updated_at: currentTimestamp,
-    //     })
-    //     .eq("user_id", user_id)
-    //     .eq("progress_course_id", progress_course_id)
-    //     .select(
-    //       "progress_course_id, user_id, course_id, progress_poin, is_active, is_course_completed"
-    //     );
-
-    //   if (updateError) {
-    //     return res.status(500).json({
-    //       status: 500,
-    //       error: "Failed to update record",
-    //     });
-    //   }
-
-    //   progress = updatedProgress;
-    // }
-
     return res.status(200).json({
       status: 200,
       body: "Successfully update course progress",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      error: "Internal server error",
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/course/fetch-course-dropdown:
+ *   get:
+ *     summary: Fetch course dropdown options.
+ *     description: Retrieves a list of courses to populate a dropdown menu.
+ *     tags:
+ *       - Course
+ *     responses:
+ *       '200':
+ *         description: Successfully retrieved course dropdown data.
+ *       '500':
+ *         description: Internal server error.
+ */
+courseRouter.get("/fetch-course-dropdown", async (req, res) => {
+  try {
+    // Update course progress using RPC (remote stored procedure)
+    const data = await db.rpc("fetch_practice_and_course");
+
+    return res.status(200).json({
+      status: 200,
+      body: data,
     });
   } catch (error) {
     return res.status(500).json({
