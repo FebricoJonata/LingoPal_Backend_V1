@@ -174,12 +174,11 @@ courseRouter.post("/update-progress", verifyToken, async (req, res) => {
  */
 courseRouter.get("/fetch-course-dropdown", async (req, res) => {
   try {
-    // Update course progress using RPC (remote stored procedure)
     const data = await db.rpc("fetch_practice_and_course");
 
     return res.status(200).json({
       status: 200,
-      body: data,
+      body: data.data,
     });
   } catch (error) {
     return res.status(500).json({
