@@ -166,6 +166,13 @@ courseRouter.post("/update-progress", verifyToken, async (req, res) => {
  *     description: Retrieves a list of courses to populate a dropdown menu.
  *     tags:
  *       - Course
+ *     parameters:
+ *       - in: query
+ *         name: course_category_id
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: The ID of the course category to filter by.
  *     responses:
  *       '200':
  *         description: Successfully retrieved course dropdown data.
@@ -174,13 +181,18 @@ courseRouter.post("/update-progress", verifyToken, async (req, res) => {
  */
 courseRouter.get("/fetch-course-dropdown", async (req, res) => {
   try {
-    const data = await db.rpc("fetch_practice_and_course");
+    const { course_category_id } = req.query; // Get the course_category_id from query parameters
+
+    const data = await db.rpc("fetch_practice_and_course", {
+      course_category_id: Number(course_category_id),
+    }); // Pass category filter to DB
 
     return res.status(200).json({
       status: 200,
       body: data.data,
     });
   } catch (error) {
+    console.error("Error fetching courses:", error);
     return res.status(500).json({
       status: 500,
       error: "Internal server error",
